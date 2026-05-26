@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pawcraft — Forge 1.20.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  /* ── DARK THEME ── */
+  [data-theme="dark"] {
+    --bg: #0c0b10;
+    --bg2: #13111a;
+    --bg3: #1a1724;
+    --border: #252132;
+    --border2: #332e45;
+    --text: #ede8f5;
+    --text2: #8b84a0;
+    --text3: #4e4862;
+    --purple: #9b7de8;
+    --purple2: #b89cf0;
+    --purple-dim: #1e1535;
+    --purple-mid: #2e2450;
+    --teal: #3eb89a;
+    --teal-dim: #0d211c;
+    --teal-border: #1a3d35;
+    --pink: #c472d4;
+    --pink-dim: #2a1530;
+    --pink-border: #3a1550;
+    --green: #6aaa5a;
+    --green-dim: #131f10;
+    --green-border: #1e3518;
+    --blue: #5b9cf6;
+    --blue-dim: #0f1e38;
+    --blue-border: #1a3058;
+    --gray-dim: #17151f;
+    --glow: rgba(155, 125, 232, 0.08);
+    --note-border-left: #9b7de8;
+    --warn-tag-server-color: #d48de0;
+    --warn-tag-server-border: #4a1f58;
+  }
+
+  /* ── LIGHT THEME ── */
+  [data-theme="light"] {
+    --bg: #f5f3ff;
+    --bg2: #ffffff;
+    --bg3: #ede9fb;
+    --border: #d8d2f0;
+    --border2: #c4bce8;
+    --text: #1a1530;
+    --text2: #5a5275;
+    --text3: #9b93b8;
+    --purple: #6b44d4;
+    --purple2: #5230c0;
+    --purple-dim: #ede9fb;
+    --purple-mid: #c4bce8;
+    --teal: #0d8a6f;
+    --teal-dim: #e0f5f0;
+    --teal-border: #a0ddd0;
+    --pink: #a030b8;
+    --pink-dim: #f8e8fc;
+    --pink-border: #e0a8ec;
+    --green: #3d8a2e;
+    --green-dim: #ebf5e8;
+    --green-border: #b0d8a8;
+    --blue: #2860d4;
+    --blue-dim: #e8f0fc;
+    --blue-border: #a8c0f0;
+    --gray-dim: #f0eef8;
+    --glow: rgba(107, 68, 212, 0.06);
+    --note-border-left: #6b44d4;
+    --warn-tag-server-color: #8820a8;
+    --warn-tag-server-border: #d890ec;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  [data-theme="dark"] body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, var(--glow) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.5rem;
+    z-index: 100;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 999px;
+    padding: 5px 5px;
+    display: flex;
+    gap: 2px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .toggle-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+
+  .toggle-btn.active {
+    background: var(--purple-dim);
+    color: var(--purple);
+  }
+
+  .toggle-btn:hover:not(.active) {
+    background: var(--bg3);
+    color: var(--text2);
+  }
+
+  /* ── PAGE ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  .header {
+    margin-bottom: 3.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+    transition: border-color 0.25s;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    flex-direction: column;
+  }
+
+  .logo-paw {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--purple-mid);
+    flex-shrink: 0;
+    background: var(--purple-dim);
+    transition: border-color 0.25s;
+  }
+
+  .logo-paw img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pack-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+    transition: color 0.25s;
+  }
+
+  .pack-name span { color: var(--purple2); transition: color 0.25s; }
+
+  .pack-sub {
+    font-size: 12px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 300;
+    margin-top: 5px;
+    transition: color 0.25s;
+    text-align: center;
+  }
+
+  .meta-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 1.2rem;
+    justify-content: center;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text2);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+  }
+
+  .chip svg { width: 13px; height: 13px; stroke: var(--text3); }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 2.5rem; opacity: 0; transform: translateY(10px); animation: fadeup 0.4s forwards; }
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.3s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+
+  @keyframes fadeup { to { opacity: 1; transform: none; } }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text3);
+    white-space: nowrap;
+    transition: color 0.25s;
+  }
+
+  .section-line { flex: 1; height: 1px; background: var(--border); transition: background 0.25s; }
+
+  /* ── MOD LIST ── */
+  .mod-list {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg2);
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .mod-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s, border-color 0.25s;
+  }
+
+  .mod-row:last-child { border-bottom: none; }
+  .mod-row:hover { background: var(--bg3); }
+
+  .mod-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .mod-icon svg { width: 15px; height: 15px; }
+
+  .icon-tech    { background: var(--blue-dim);   border: 1px solid var(--blue-border); }
+  .icon-tech    svg { stroke: var(--blue); }
+  .icon-magic   { background: var(--purple-dim); border: 1px solid var(--purple-mid); }
+  .icon-magic   svg { stroke: var(--purple2); }
+  .icon-explore { background: var(--teal-dim);   border: 1px solid var(--teal-border); }
+  .icon-explore svg { stroke: var(--teal); }
+  .icon-qol     { background: var(--gray-dim);   border: 1px solid var(--border2); }
+  .icon-qol     svg { stroke: var(--text2); }
+  .icon-perf    { background: var(--green-dim);  border: 1px solid var(--green-border); }
+  .icon-perf    svg { stroke: var(--green); }
+  .icon-cosm    { background: var(--pink-dim);   border: 1px solid var(--pink-border); }
+  .icon-cosm    svg { stroke: var(--pink); }
+  .icon-compat  { background: var(--purple-dim); border: 1px solid var(--border2); }
+  .icon-compat  svg { stroke: var(--purple); }
+
+  .mod-info { flex: 1; min-width: 0; }
+
+  .mod-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.25s;
+  }
+
+  .mod-desc {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 300;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.25s;
+  }
+
+  .mod-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .warn-tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--purple-dim);
+    color: var(--purple2);
+    border: 1px solid var(--purple-mid);
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+  }
+
+  .warn-tag.server {
+    background: var(--pink-dim);
+    color: var(--warn-tag-server-color);
+    border-color: var(--warn-tag-server-border);
+  }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text2);
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+
+  .link-btn svg { width: 11px; height: 11px; stroke: currentColor; }
+
+  .link-btn:hover {
+    color: var(--purple2);
+    border-color: var(--purple);
+    background: var(--purple-dim);
+  }
+
+  .note {
+    margin-top: 2.5rem;
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--note-border-left);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+  }
+
+  .note strong { color: var(--text); font-weight: 500; transition: color 0.25s; }
+  .note ul { margin: 0.5rem 0 0 1rem; }
+  .note li { margin-bottom: 4px; }
+
+  .footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: color 0.25s;
+  }
+
+  @media (max-width: 600px) {
+    .pack-name { font-size: 38px; }
+    .mod-desc { display: none; }
+    .warn-tag { display: none; }
+    .page { padding: 2rem 1rem 3rem; }
+    .theme-toggle { top: 0.75rem; right: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="theme-toggle" role="group" aria-label="Choisir le thème">
+  <button class="toggle-btn active" id="btn-dark" onclick="setTheme('dark')" title="Thème sombre">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <button class="toggle-btn" id="btn-light" onclick="setTheme('light')" title="Thème clair">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  </button>
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-paw">
+        <img src="./icon.png" alt="Pawcraft icon">
+      </div>
+      <div>
+        <div class="pack-name">PAW<span>CRAFT</span></div>
+        <div class="pack-sub">Modpack Minecraft</div>
+      </div>
+    </div>
+    <div class="meta-chips">
+      <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Minecraft 1.20.1</span>
+      <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Forge</span>
+      <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>18 mods</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Tech &amp; automatisation</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Create</div><div class="mod-desc">Automatisation mécanique, engrenages, convoyeurs, presses</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/create" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Applied Energistics 2</div><div class="mod-desc">Réseau de stockage numérique, autocrafting</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/applied-energistics-2" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div class="mod-info"><div class="mod-name">CC: Tweaked</div><div class="mod-desc">Ordinateurs et robots programmables en Lua</div></div>
+        <div class="mod-right"><span class="warn-tag">Modrinth only</span><a class="link-btn" href="https://modrinth.com/mod/gu7yAkud" target="_blank">Modrinth <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Mods de compatibilité</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Create: Applied Kinetics</div><div class="mod-desc">Compat Create × AE2</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/create-applied-kinetics" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="mod-info"><div class="mod-name">CC×Create Compat Patch</div><div class="mod-desc">Compat Create × CC — nécessaire seulement avec Create 6.0</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/computercraft-create-compatibility-patch" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Ars Creo</div><div class="mod-desc">Compat Create × Ars Nouveau</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ars-creo" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Magie</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-magic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 5 4 4"/><path d="M13 7 8.7 2.7a2.12 2.12 0 0 0-3 3L7 7"/><path d="m7 7-2 2a2 2 0 0 0 0 2.83l8 8a2 2 0 0 0 2.83 0L21 14a2 2 0 0 0 0-2.83l-8-8z"/><path d="M9.5 14.5 16 8"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Ars Nouveau</div><div class="mod-desc">Création de sorts, familiers, glyphes, magie arcanique</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ars-nouveau" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Exploration</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-explore"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Waystones</div><div class="mod-desc">Téléportation entre bornes — requiert Balm</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/waystones" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">QoL &amp; interface</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+        <div class="mod-info"><div class="mod-name">JEI</div><div class="mod-desc">Just Enough Items — recettes et usages</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/jei" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="mod-info"><div class="mod-name">JADE</div><div class="mod-desc">Infos de blocs/entités au survol — successeur de WAILA</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/jade" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
+        <div class="mod-info"><div class="mod-name">FTB Chunks</div><div class="mod-desc">Claims de chunks, carte en ligne</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ftb-chunks-forge" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Performance &amp; shaders</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-perf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Embeddium</div><div class="mod-desc">Fork de Sodium pour Forge — optimisation du rendu</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/embeddium" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-perf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Oculus</div><div class="mod-desc">Fork d'Iris pour Forge — support des shaderpacks</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/oculus" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header"><span class="section-label">Cosmétique client</span><div class="section-line"></div></div>
+    <div class="mod-list">
+      <div class="mod-row">
+        <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Better Foliage Renewed</div><div class="mod-desc">Feuillages et herbes plus denses et détaillés</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/better-foliage-renewed" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 14c.6-1.28 1-2.61 1-4a6 6 0 0 0-12 0c0 1.39.4 2.72 1 4"/><path d="m8.5 19 3.5 3 3.5-3"/><path d="M12 17v5"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Falling Leaves</div><div class="mod-desc">Particules de feuilles tombant des arbres</div></div>
+        <div class="mod-right"><span class="warn-tag">Modrinth only</span><a class="link-btn" href="https://modrinth.com/mod/fallingleavesforge" target="_blank">Modrinth <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Particular ✨ Reforged</div><div class="mod-desc">Particules ambiantes contextuelles (lucioles, cascades, poussière)</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/particular-reforged" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Subtle Effects</div><div class="mod-desc">Détails subtils via particules + sons (eau, vapeur, poussière)</div></div>
+        <div class="mod-right"><span class="warn-tag server">Serveur requis</span><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/subtle-effects" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+      <div class="mod-row">
+        <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="m16 20-2 2-2-2"/><path d="m12 22 0-10"/></svg></div>
+        <div class="mod-info"><div class="mod-name">Particle Rain</div><div class="mod-desc">Pluie et météo remplacées par des particules</div></div>
+        <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/particle-rain" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Notes d'installation</strong>
+    <ul>
+      <li><strong>CC: Tweaked</strong> et <strong>Falling Leaves</strong> sont sur Modrinth uniquement — à installer manuellement si tu utilises le launcher CurseForge.</li>
+      <li><strong>Subtle Effects</strong> doit être installé côté serveur <em>et</em> client.</li>
+      <li><strong>Waystones</strong> requiert le mod <strong>Balm</strong> comme dépendance.</li>
+      <li>La dimension de minage reste à définir.</li>
+    </ul>
+  </div>
+
+  <div class="footer">Pawcraft — Forge 1.20.1</div>
+
+</div>
+
+<script>
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('pawcraft-theme', theme);
+    document.getElementById('btn-dark').classList.toggle('active', theme === 'dark');
+    document.getElementById('btn-light').classList.toggle('active', theme === 'light');
+  }
+
+  (function() {
+    const saved = localStorage.getItem('pawcraft-theme');
+    const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    const theme = saved || preferred;
+    if (theme !== 'dark') setTheme(theme);
+  })();
+</script>
+</body>
+</html>

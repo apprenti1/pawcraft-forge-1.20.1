@@ -1,0 +1,23 @@
+appId: com.pawcraft.launcher
+productName: Pawcraft Launcher
+copyright: Copyright © 2024 Pawcraft
+
+directories:
+  output: dist
+
+files:
+  - "**/*"
+  - "!dist/**"
+  - "!build-out/**"
+  - "!release/**"
+  - "!node_modules/.cache/**"
+  - "!.git/**"
+  - "!index.html"
+
+win:
+  icon: icon_converted.png
+  target:
+    - target: dir
+      arch: [x64]
+
+publish: null

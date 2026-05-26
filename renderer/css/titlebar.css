@@ -1,0 +1,75 @@
+.titlebar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
+  flex-shrink: 0;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.titlebar-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: var(--text3);
+  transition: color 0.25s;
+}
+
+.titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+
+.theme-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  padding: 2px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.toggle-btn img,
+.toggle-btn svg { width: 12px; height: 12px; }
+.toggle-btn.active { background: var(--purple-dim); color: var(--purple); }
+.toggle-btn:hover:not(.active) { background: var(--bg3); color: var(--text2); }
+
+.btn-wctl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-wctl img,
+.btn-wctl svg { width: 11px; height: 11px; }
+.btn-wctl:hover { background: var(--bg3); color: var(--text); }
+.btn-wctl.btn-close:hover { background: var(--danger); color: #fff; }

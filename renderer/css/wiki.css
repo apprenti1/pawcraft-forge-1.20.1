@@ -1,0 +1,271 @@
+/* ── Wiki page container ── */
+.wiki-page {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#page-wiki {
+  overflow-y: auto;
+}
+
+/* ── Wiki header ── */
+.wiki-header {
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+  transition: border-color 0.25s;
+}
+
+.wiki-header-top {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+
+.wiki-logo-paw {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--purple-mid);
+  flex-shrink: 0;
+  background: var(--purple-dim);
+  transition: border-color 0.25s;
+}
+
+.wiki-logo-paw img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wiki-pack-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 46px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1;
+  transition: color 0.25s;
+  text-align: center;
+}
+
+.wiki-pack-name span { color: var(--purple2); transition: color 0.25s; }
+
+.wiki-pack-sub {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 300;
+  margin-top: 4px;
+  text-align: center;
+  transition: color 0.25s;
+}
+
+.meta-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+.chip svg { width: 13px; height: 13px; stroke: var(--text3); fill: none; }
+
+/* ── Sections ── */
+.section {
+  margin-bottom: 2rem;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeup 0.4s forwards;
+}
+
+.section:nth-child(1) { animation-delay: 0.05s; }
+.section:nth-child(2) { animation-delay: 0.1s; }
+.section:nth-child(3) { animation-delay: 0.15s; }
+.section:nth-child(4) { animation-delay: 0.2s; }
+.section:nth-child(5) { animation-delay: 0.25s; }
+.section:nth-child(6) { animation-delay: 0.3s; }
+.section:nth-child(7) { animation-delay: 0.35s; }
+
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+.section-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text3);
+  white-space: nowrap;
+  transition: color 0.25s;
+}
+
+.section-line { flex: 1; height: 1px; background: var(--border); transition: background 0.25s; }
+
+/* ── Mod list ── */
+.mod-list {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg2);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.mod-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.25s;
+}
+
+.mod-row:last-child { border-bottom: none; }
+.mod-row:hover { background: var(--bg3); }
+
+.mod-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.mod-icon svg { width: 15px; height: 15px; fill: none; }
+
+.icon-tech    { background: var(--blue-dim);   border: 1px solid var(--blue-border); }
+.icon-tech    svg { stroke: var(--blue); }
+.icon-magic   { background: var(--purple-dim); border: 1px solid var(--purple-mid); }
+.icon-magic   svg { stroke: var(--purple2); }
+.icon-explore { background: var(--teal-dim);   border: 1px solid var(--teal-border); }
+.icon-explore svg { stroke: var(--teal); }
+.icon-qol     { background: var(--gray-dim);   border: 1px solid var(--border2); }
+.icon-qol     svg { stroke: var(--text2); }
+.icon-perf    { background: var(--green-dim);  border: 1px solid var(--green-border); }
+.icon-perf    svg { stroke: var(--green); }
+.icon-cosm    { background: var(--pink-dim);   border: 1px solid var(--pink-border); }
+.icon-cosm    svg { stroke: var(--pink); }
+.icon-compat  { background: var(--purple-dim); border: 1px solid var(--border2); }
+.icon-compat  svg { stroke: var(--purple); }
+
+.mod-info { flex: 1; min-width: 0; }
+
+.mod-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.25s;
+}
+
+.mod-desc {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 300;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.25s;
+}
+
+.mod-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.warn-tag {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--purple-dim);
+  color: var(--purple2);
+  border: 1px solid var(--purple-mid);
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+
+.warn-tag.server {
+  background: var(--pink-dim);
+  color: var(--warn-tag-server-color);
+  border-color: var(--warn-tag-server-border);
+}
+
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.link-btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; }
+
+.link-btn:hover {
+  color: var(--purple2);
+  border-color: var(--purple);
+  background: var(--purple-dim);
+}
+
+/* ── Note block ── */
+.wiki-note {
+  margin-top: 2rem;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--note-border-left);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+.wiki-note strong { color: var(--text); font-weight: 500; transition: color 0.25s; }
+.wiki-note ul { margin: 0.5rem 0 0 1rem; }
+.wiki-note li { margin-bottom: 4px; }
+
+/* ── Footer ── */
+.wiki-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.25s;
+}
