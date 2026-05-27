@@ -17,7 +17,7 @@ files:
 win:
   icon: icon_converted.png
   target:
-    - target: dir
+    - target: portable
       arch: [x64]
 
 publish: null

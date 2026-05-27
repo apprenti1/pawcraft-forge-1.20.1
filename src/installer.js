@@ -2,7 +2,8 @@ const path = require('path');
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const { spawn, execSync } = require('child_process');
-const { MODS, MC_VERSION, FORGE_VERSION } = require('./modlist');
+const { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION } = require('./modlist');
+const { findOrDownloadJava } = require('./java');
 
 const FORGE_INSTALLER_URL =
   `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
@@ -36,43 +37,24 @@ async function downloadFile(url, destPath, onProgress, label) {
   });
 }
 
-// ── Java ──────────────────────────────────────────────────────────────────────
-
-function findJava() {
-  // 1. Check system Java (PATH)
-  try {
-    const out = execSync('java -version 2>&1', { encoding: 'utf8' });
-    const m = out.match(/version "(\d+)/);
-    if (m && parseInt(m[1]) >= 17) return 'java';
-  } catch {}
-
-  // 2. Common Windows install paths (Java 17)
-  const candidates = [
-    'C:/Program Files/Java/jre-17/bin/java.exe',
-    'C:/Program Files/Java/jdk-17/bin/java.exe',
-    'C:/Program Files/Eclipse Adoptium/jre-17.0.9.9-hotspot/bin/java.exe',
-    'C:/Program Files/Microsoft/jdk-17.0.9.8-hotspot/bin/java.exe',
-  ];
-  for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
-  }
-
-  throw new Error(
-    'Java 17+ introuvable. Installez-le depuis https://adoptium.net/ puis relancez le launcher.'
-  );
-}
-
 // ── Forge installation ────────────────────────────────────────────────────────
 
 async function installForge(gameDir, onProgress) {
-  onProgress('step', { label: 'Recherche de Java 17+...' });
-  const javaPath = findJava();
+  onProgress('step', { label: 'Recherche de Java 17–21…' });
+  const javaDir = path.join(gameDir, '..', 'java');
+  const javaPath = await findOrDownloadJava(javaDir, onProgress);
 
   onProgress('step', { label: 'Téléchargement de Forge...' });
   const installerPath = path.join(gameDir, '_forge-installer.jar');
   await downloadFile(FORGE_INSTALLER_URL, installerPath, onProgress, 'Forge installer');
 
   onProgress('step', { label: 'Installation de Forge (peut prendre 1-2 min)...' });
+
+  // Forge installer requires launcher_profiles.json to exist
+  const profilesPath = path.join(gameDir, 'launcher_profiles.json');
+  if (!fs.existsSync(profilesPath)) {
+    await fs.writeJson(profilesPath, { profiles: {}, selectedProfile: '(Default)', authenticationDatabase: {} });
+  }
 
   await new Promise((resolve, reject) => {
     const proc = spawn(
@@ -134,7 +116,8 @@ async function resolveCurseForge(projectId, apiKey) {
 async function resolveModrinth(projectId) {
   const url =
     `https://api.modrinth.com/v2/project/${projectId}/version` +
-    `?game_versions=["${MC_VERSION}"]&loaders=["forge"]`;
+    `?game_versions=${encodeURIComponent(JSON.stringify([MC_VERSION]))}` +
+    `&loaders=${encodeURIComponent(JSON.stringify(['forge']))}` ;
 
   const res = await fetch(url, {
     headers: { 'User-Agent': 'PawcraftLauncher/1.0 (contact@pawcraft.local)' },
@@ -183,19 +166,140 @@ async function downloadMods(gameDir, apiKey, onProgress) {
   }
 }
 
+// ── Shaders & resource packs ──────────────────────────────────────────────────
+
+async function resolveModrinthAsset(projectId, gameVersion = null, fileMatch = null) {
+  let url = `https://api.modrinth.com/v2/project/${projectId}/version`;
+  if (gameVersion) url += `?game_versions=${encodeURIComponent(JSON.stringify([gameVersion]))}`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'PawcraftLauncher/1.0' } });
+  if (!res.ok) throw new Error(`Modrinth: HTTP ${res.status} (${projectId})`);
+  const versions = await res.json();
+  if (!versions || versions.length === 0) throw new Error(`Aucune version trouvée pour ${projectId} (MC ${gameVersion || 'any'})`);
+  const files = versions[0].files;
+  const picked = fileMatch
+    ? (files.find((f) => f.filename.toLowerCase().includes(fileMatch)) || files[0])
+    : (files.find((f) => f.primary) || files[0]);
+  return { url: picked.url, filename: picked.filename };
+}
+
+async function downloadShaders(gameDir, onProgress) {
+  const dir = path.join(gameDir, 'shaderpacks');
+  await fs.ensureDir(dir);
+  for (const shader of SHADERS) {
+    const existing = fs.readdirSync(dir).find((f) => f.includes('Complementary'));
+    if (existing) {
+      configureShader(gameDir, existing);
+      continue;
+    }
+    onProgress('step', { label: `Téléchargement du shader ${shader.name}…` });
+    try {
+      const dl = await resolveModrinthAsset(shader.projectId);
+      await downloadFile(dl.url, path.join(dir, dl.filename), onProgress, shader.name);
+      configureShader(gameDir, dl.filename);
+    } catch (err) {
+      onProgress('warn', { label: `⚠ Shader ${shader.name}: ${err.message}` });
+    }
+  }
+}
+
+async function downloadResourcePacks(gameDir, onProgress) {
+  const dir = path.join(gameDir, 'resourcepacks');
+  await fs.ensureDir(dir);
+  const active = [];
+  for (const pack of RESOURCEPACKS) {
+    const keyword = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
+    const existing = fs.readdirSync(dir).find((f) => f.toLowerCase().includes(keyword));
+    if (existing) {
+      active.push(existing);
+      continue;
+    }
+    onProgress('step', { label: `Téléchargement du resource pack ${pack.name}…` });
+    try {
+      const dl = await resolveModrinthAsset(pack.projectId, MC_VERSION, pack.fileMatch || null);
+      await downloadFile(dl.url, path.join(dir, dl.filename), onProgress, pack.name);
+      active.push(dl.filename);
+    } catch (err) {
+      onProgress('warn', { label: `⚠ Resource pack ${pack.name}: ${err.message}` });
+    }
+  }
+  if (active.length) configureResourcePacks(gameDir, active);
+}
+
+function configureShader(gameDir, filename) {
+  const configDir  = path.join(gameDir, 'config');
+  const oculusProps = path.join(configDir, 'oculus.properties');
+  fs.ensureDirSync(configDir);
+  let content = '';
+  if (fs.existsSync(oculusProps)) {
+    content = fs.readFileSync(oculusProps, 'utf8');
+    content = content.replace(/^shaderPack=.*/m, `shaderPack=${filename}`);
+    if (!/^shaderPack=/m.test(content)) content += `\nshaderPack=${filename}`;
+    content = content.replace(/^enableShaders=.*/m, 'enableShaders=true');
+    if (!/^enableShaders=/m.test(content)) content += '\nenableShaders=true';
+  } else {
+    content = `shaderPack=${filename}\nenableShaders=true\n`;
+  }
+  fs.writeFileSync(oculusProps, content, 'utf8');
+}
+
+function configureResourcePacks(gameDir, filenames) {
+  const optionsPath = path.join(gameDir, 'options.txt');
+  const packEntries = filenames.map((f) => `file/${f}`);
+  const base = ['vanilla', 'mod_resources'];
+  // Virtual/built-in packs registered at runtime — always enable them
+  const virtual = [
+    'fabric', 'continuity:default', 'continuity:glass_pane_culling_fix',
+    'high_contrast', 'mod/subtle_effects:resourcepacks/biome_color_water_particles',
+  ];
+  const fixed = new Set([...base, ...packEntries, ...virtual]);
+
+  if (!fs.existsSync(optionsPath)) {
+    const line = `resourcePacks:[${[...base, ...packEntries, ...virtual].map((p) => `"${p}"`).join(',')}]`;
+    fs.writeFileSync(optionsPath, line + '\n', 'utf8');
+    return;
+  }
+
+  let content = fs.readFileSync(optionsPath, 'utf8');
+  const match = content.match(/^resourcePacks:\[(.*)\]/m);
+
+  // Preserve any other mod-injected entries not already in our fixed list
+  const preserved = match
+    ? match[1].split(',')
+        .map((s) => s.trim().replace(/^"|"$/g, ''))
+        .filter((s) => s && !fixed.has(s))
+    : [];
+
+  const line = `resourcePacks:[${[...base, ...packEntries, ...virtual, ...preserved].map((p) => `"${p}"`).join(',')}]`;
+
+  if (match) {
+    content = content.replace(/^resourcePacks:.*/m, line);
+  } else {
+    content += '\n' + line;
+  }
+  fs.writeFileSync(optionsPath, content, 'utf8');
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 async function checkInstallation(gameDir) {
-  const forgeDir = path.join(gameDir, 'versions', FORGE_VERSION);
-  const modsDir  = path.join(gameDir, 'mods');
+  const forgeProfileName = FORGE_VERSION.replace(`${MC_VERSION}-`, `${MC_VERSION}-forge-`);
+  const forgeDir    = path.join(gameDir, 'versions', forgeProfileName);
+  const modsDir     = path.join(gameDir, 'mods');
+  const shadersDir  = path.join(gameDir, 'shaderpacks');
+  const resourceDir = path.join(gameDir, 'resourcepacks');
 
   const hasForge = fs.existsSync(forgeDir);
   const modCount = fs.existsSync(modsDir)
     ? fs.readdirSync(modsDir).filter((f) => f.endsWith('.jar')).length
     : 0;
-  const hasMods = modCount > 0;
+  const hasMods    = modCount >= MODS.length;
+  const hasShaders = fs.existsSync(shadersDir) &&
+    fs.readdirSync(shadersDir).some((f) => f.includes('Complementary'));
+  const packKeywords = RESOURCEPACKS.map((p) => (p.fileMatch || p.projectId.split('-')[0]).toLowerCase());
+  const resourceFiles = fs.existsSync(resourceDir) ? fs.readdirSync(resourceDir).map((f) => f.toLowerCase()) : [];
+  const hasResourcePacks = packKeywords.every((kw) => resourceFiles.some((f) => f.includes(kw)));
 
-  return { hasForge, hasMods, modCount, ready: hasForge && hasMods };
+  return { hasForge, hasMods, modCount, hasShaders, hasResourcePacks, ready: hasForge && hasMods && hasResourcePacks };
 }
 
 async function installAll(gameDir, apiKey, onProgress) {
@@ -207,11 +311,29 @@ async function installAll(gameDir, apiKey, onProgress) {
   }
 
   if (!state.hasMods) {
-    onProgress('step', { label: 'Téléchargement des mods...' });
+    onProgress('step', { label: 'Téléchargement des mods…' });
     await downloadMods(gameDir, apiKey, onProgress);
   }
+
+  await downloadShaders(gameDir, onProgress);
+  await downloadResourcePacks(gameDir, onProgress);
 
   onProgress('done', { label: '✓ Installation terminée !' });
 }
 
-module.exports = { checkInstallation, installAll };
+function applyGameOptions(gameDir) {
+  const resourceDir = path.join(gameDir, 'resourcepacks');
+  const filenames = [];
+
+  if (fs.existsSync(resourceDir)) {
+    for (const pack of RESOURCEPACKS) {
+      const kw = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
+      const found = fs.readdirSync(resourceDir).find((f) => f.toLowerCase().includes(kw));
+      if (found) filenames.push(found);
+    }
+  }
+
+  configureResourcePacks(gameDir, filenames);
+}
+
+module.exports = { checkInstallation, installAll, applyGameOptions };

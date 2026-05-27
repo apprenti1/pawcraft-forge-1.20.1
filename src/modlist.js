@@ -1,120 +1,64 @@
-// Modpack Pawcraft — Forge 1.20.1
-// CurseForge IDs : vérifiables sur https://www.curseforge.com/minecraft/mc-mods/<slug>
-// Modrinth IDs   : vérifiables sur https://modrinth.com/mod/<slug>
-//
-// Pour mettre à jour un ID CurseForge : chercher le mod, l'URL contient /mc-mods/<id>-<slug>
-// ou ouvrir la page et noter l'ID numérique dans l'URL de téléchargement.
-
 const MODS = [
-  // ── Tech & Automation ─────────────────────────────────────────────────────
-  {
-    name: 'Create',
-    source: 'curseforge',
-    projectId: 328085,
-  },
-  {
-    name: 'Applied Energistics 2',
-    source: 'curseforge',
-    projectId: 223794,
-  },
-  {
-    name: 'CC: Tweaked',
-    source: 'modrinth',
-    projectId: 'gu7yAkud',
-  },
-  {
-    name: 'Create: Applied Kinetics',
-    source: 'curseforge',
-    projectId: 622112, // TODO: vérifier
-  },
-  {
-    name: 'CC×Create Compat Patch',
-    source: 'curseforge',
-    projectId: 854144, // TODO: vérifier — computercraft-create-compatibility-patch
-  },
-  {
-    name: 'Ars Creo',
-    source: 'curseforge',
-    projectId: 566353, // TODO: vérifier
-  },
+  // Tech & Automation
+  { name: 'Create',                  source: 'curseforge', projectId: 328085 },
+  { name: 'Applied Energistics 2',   source: 'curseforge', projectId: 223794 },
+  { name: 'CC: Tweaked',             source: 'modrinth',   projectId: 'cc-tweaked' },
+  { name: 'Create: Applied Kinetics',source: 'curseforge', projectId: 867328 },
+  { name: 'CC:C Bridge',             source: 'curseforge', projectId: 656214 },
+  { name: 'Ars Creo',                source: 'curseforge', projectId: 575698 },
 
-  // ── Magie ─────────────────────────────────────────────────────────────────
-  {
-    name: 'Ars Nouveau',
-    source: 'curseforge',
-    projectId: 401955,
-  },
+  // Magie
+  { name: 'Ars Nouveau',             source: 'curseforge', projectId: 401955 },
 
-  // ── Exploration ───────────────────────────────────────────────────────────
-  {
-    name: 'Waystones',
-    source: 'curseforge',
-    projectId: 245755,
-  },
-  {
-    name: 'Balm',
-    source: 'curseforge',
-    projectId: 531761, // Dépendance de Waystones
-  },
+  // Exploration
+  { name: 'Waystones',               source: 'curseforge', projectId: 245755 },
+  { name: 'Balm',                    source: 'curseforge', projectId: 531761 },
 
-  // ── QoL & Interface ───────────────────────────────────────────────────────
-  {
-    name: 'JEI',
-    source: 'curseforge',
-    projectId: 238222,
-  },
-  {
-    name: 'JADE',
-    source: 'curseforge',
-    projectId: 324717,
-  },
-  {
-    name: 'FTB Chunks',
-    source: 'curseforge',
-    projectId: 314906, // TODO: vérifier
-  },
+  // QoL & Interface
+  { name: 'JEI',                     source: 'curseforge', projectId: 238222 },
+  { name: 'JADE',                    source: 'curseforge', projectId: 324717 },
+  { name: 'FTB Chunks',              source: 'curseforge', projectId: 314906 },
 
-  // ── Performance & Shaders ─────────────────────────────────────────────────
-  {
-    name: 'Embeddium',
-    source: 'curseforge',
-    projectId: 908741, // TODO: vérifier
-  },
-  {
-    name: 'Oculus',
-    source: 'curseforge',
-    projectId: 581495, // TODO: vérifier
-  },
+  // Performance & Shaders
+  { name: 'Embeddium',               source: 'curseforge', projectId: 908741 },
+  { name: 'Oculus',                  source: 'curseforge', projectId: 581495 },
 
-  // ── Cosmétique (client) ───────────────────────────────────────────────────
-  {
-    name: 'Better Foliage Renewed',
-    source: 'curseforge',
-    projectId: 678374, // TODO: vérifier
-  },
-  {
-    name: 'Falling Leaves',
-    source: 'modrinth',
-    projectId: 'fallingleavesforge',
-  },
-  {
-    name: 'Particular Reforged',
-    source: 'curseforge',
-    projectId: 895466, // TODO: vérifier
-  },
-  {
-    name: 'Subtle Effects',
-    source: 'curseforge',
-    projectId: 873899, // TODO: vérifier — à installer côté serveur ET client
-  },
-  {
-    name: 'Particle Rain',
-    source: 'curseforge',
-    projectId: 517299, // TODO: vérifier
-  },
+  // Cosmetique (client)
+  { name: 'Better Foliage Renewed',  source: 'curseforge', projectId: 470013 },
+  { name: 'Falling Leaves',          source: 'modrinth',   projectId: 'fallingleavesforge' },
+  { name: 'Particular Reforged',     source: 'curseforge', projectId: 1219053 },
+  { name: 'Subtle Effects',          source: 'curseforge', projectId: 1023913 },
+  { name: 'Particle Rain',           source: 'curseforge', projectId: 421897 },
+
+  // Connected Textures (OptiFine CTM via Sinytra Connector)
+  { name: 'Sinytra Connector',       source: 'modrinth',   projectId: 'connector' },
+  { name: 'Forgified Fabric API',    source: 'modrinth',   projectId: 'forgified-fabric-api' },
+  { name: 'Continuity',              source: 'modrinth',   projectId: 'continuity' },
+  { name: 'Entity Model Features',   source: 'modrinth',   projectId: 'entity-model-features' },
+  { name: 'Entity Texture Features', source: 'modrinth',   projectId: 'entitytexturefeatures' },
+
+  // Dependances
+  { name: 'GuideMeForge',            source: 'modrinth',   projectId: 'guideme' },
+  { name: 'Curios API',              source: 'modrinth',   projectId: 'curios' },
+  { name: 'Architectury API',        source: 'modrinth',   projectId: 'architectury-api' },
+  { name: 'Fzzy Config',             source: 'modrinth',   projectId: 'fzzy-config' },
+  { name: 'Kotlin for Forge',        source: 'curseforge', projectId: 351264 },
+  { name: 'FTB Library',             source: 'curseforge', projectId: 404465 },
+  { name: 'FTB Teams',               source: 'curseforge', projectId: 404468 },
+];
+
+const SHADERS = [
+  { name: 'Complementary Reimagined', source: 'modrinth', projectId: 'complementary-reimagined' },
+];
+
+const RESOURCEPACKS = [
+  { name: 'Patrix 32x Basic', source: 'modrinth', projectId: 'patrix-32x',   fileMatch: 'basic' },
+  { name: 'Patrix 32x Addon', source: 'modrinth', projectId: 'patrix-32x',   fileMatch: 'addon' },
+  { name: 'CTM Overhaul',     source: 'modrinth', projectId: 'ctm-overhaul' },
+  { name: 'Round Trees',      source: 'modrinth', projectId: 'round-trees' },
 ];
 
 const MC_VERSION    = '1.20.1';
-const FORGE_VERSION = '1.20.1-47.2.0';
+const FORGE_VERSION = '1.20.1-47.4.20';
 
-module.exports = { MODS, MC_VERSION, FORGE_VERSION };
+module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION };

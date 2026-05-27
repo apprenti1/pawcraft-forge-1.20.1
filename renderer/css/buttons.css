@@ -91,3 +91,25 @@
 .play-hint.error   { color: var(--danger); }
 .play-hint.warn    { color: var(--warn); }
 .play-hint.success { color: var(--success); }
+
+.btn-reinstall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text3);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-reinstall svg { width: 13px; height: 13px; flex-shrink: 0; }
+.btn-reinstall:hover { color: var(--text); border-color: var(--text3); }
+.btn-reinstall:disabled { opacity: 0.35; cursor: not-allowed; }

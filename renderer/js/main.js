@@ -1,7 +1,7 @@
 import { initTheme, setTheme }                                    from './theme.js';
 import { loadSettings, saveSettings }                              from './settings.js';
 import { initAuth, loginOffline, loginMicrosoft, logout }          from './auth.js';
-import { refreshPlayButton, onPlay, handleInstallProgress, handleGameEvent } from './installer.js';
+import { refreshPlayButton, onPlay, onReinstall, handleInstallProgress, handleGameEvent } from './installer.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -55,8 +55,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ── Console ────────────────────────────────────────────────────────────────
+  document.getElementById('btn-console-clear').addEventListener('click', () => {
+    document.getElementById('console-output').innerHTML = '';
+  });
+
   // ── Play ───────────────────────────────────────────────────────────────────
   document.getElementById('btn-play').addEventListener('click', onPlay);
+  document.getElementById('btn-reinstall').addEventListener('click', onReinstall);
 
   // ── IPC events ─────────────────────────────────────────────────────────────
   window.launcher.onInstallProgress(handleInstallProgress);

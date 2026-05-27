@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const { Auth } = require('msmc');
 const { Authenticator } = require('minecraft-launcher-core');
-const { checkInstallation, installAll } = require('./src/installer');
+const { checkInstallation, installAll, applyGameOptions } = require('./src/installer');
 const { launch } = require('./src/launcher');
 
 let mainWindow;
@@ -145,7 +145,8 @@ ipcMain.handle('game:launch', async (_, auth) => {
   const settings = getSettings();
   const gameDir  = getGameDir();
   try {
-    launch(auth, gameDir, settings.ram, (event, data) => {
+    applyGameOptions(gameDir);
+    await launch(auth, gameDir, settings.ram, (event, data) => {
       if (mainWindow.isDestroyed()) return;
       if (event === 'start') { mainWindow.minimize(); }
       if (event === 'close') { mainWindow.restore(); mainWindow.focus(); }
