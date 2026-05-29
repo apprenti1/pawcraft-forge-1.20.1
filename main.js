@@ -5,6 +5,8 @@ const { Auth } = require('msmc');
 const { Authenticator } = require('minecraft-launcher-core');
 const { checkInstallation, installAll, applyGameOptions } = require('./src/installer');
 const { launch } = require('./src/launcher');
+const { checkForUpdate } = require('./src/updater');
+const { MODPACK_VERSION, GITHUB_REPO } = require('./src/modlist');
 
 let mainWindow;
 
@@ -83,9 +85,26 @@ ipcMain.handle('dialog:openDir', async () => {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
+async function refreshMicrosoftToken(savedAuth) {
+  if (savedAuth.type !== 'microsoft') return savedAuth;
+  const expiry = savedAuth.meta?.exp;
+  if (expiry && expiry > Date.now() + 5 * 60 * 1000) return savedAuth;
+  try {
+    const authManager = new Auth('select_account');
+    const xbox  = await authManager.refresh(savedAuth.meta.refresh);
+    const token = await xbox.getMinecraft();
+    const newAuth = { type: 'microsoft', ...token.mclc() };
+    fs.writeJsonSync(AUTH_FILE, newAuth);
+    return newAuth;
+  } catch {
+    return savedAuth;
+  }
+}
+
 ipcMain.handle('auth:getSaved', async () => {
   try {
-    const data = fs.readJsonSync(AUTH_FILE);
+    let data = fs.readJsonSync(AUTH_FILE);
+    data = await refreshMicrosoftToken(data);
     return { success: true, auth: data };
   } catch {
     return { success: false };
@@ -145,13 +164,42 @@ ipcMain.handle('game:launch', async (_, auth) => {
   const settings = getSettings();
   const gameDir  = getGameDir();
   try {
+    const freshAuth = await refreshMicrosoftToken(auth);
     applyGameOptions(gameDir);
-    await launch(auth, gameDir, settings.ram, (event, data) => {
+    await launch(freshAuth, gameDir, settings.ram, (event, data) => {
       if (mainWindow.isDestroyed()) return;
       if (event === 'start') { mainWindow.minimize(); }
       if (event === 'close') { mainWindow.restore(); mainWindow.focus(); }
       mainWindow.webContents.send('game:event', { event, data });
     });
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// ── Update ────────────────────────────────────────────────────────────────────
+
+ipcMain.handle('update:check', async () => {
+  const settings = getSettings();
+  const installed = settings.modpackVersion || null;
+  const result = await checkForUpdate(MODPACK_VERSION, GITHUB_REPO);
+  result.installedVersion = installed;
+  return result;
+});
+
+ipcMain.handle('update:apply', async () => {
+  const settings = getSettings();
+  const gameDir  = getGameDir();
+  const send = (type, data) => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('install:progress', { type, ...data });
+    }
+  };
+  try {
+    await installAll(gameDir, settings.curseforgeKey, send, { force: true });
+    const updated = { ...settings, modpackVersion: MODPACK_VERSION };
+    saveSettings(updated);
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };

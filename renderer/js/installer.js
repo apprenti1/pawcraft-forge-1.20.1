@@ -3,6 +3,38 @@ import { getAuth, setHint } from './auth.js';
 let _installing = false;
 let _playing    = false;
 
+export async function checkUpdate() {
+  const result = await window.launcher.checkUpdate();
+  if (!result || result.upToDate) return;
+  const banner  = document.getElementById('update-banner');
+  const verEl   = document.getElementById('update-version');
+  const btnUpd  = document.getElementById('btn-update');
+  if (!banner) return;
+  verEl.textContent = `v${result.latestVersion}`;
+  banner.classList.remove('hidden');
+  btnUpd.addEventListener('click', onUpdate, { once: true });
+}
+
+async function onUpdate() {
+  if (_installing || _playing) return;
+  document.getElementById('update-banner').classList.add('hidden');
+  _installing = true;
+  showProgress(true);
+  document.getElementById('log-box').innerHTML = '';
+  setBtn('loading', 'Mise à jour…');
+
+  const res = await window.launcher.applyUpdate();
+  _installing = false;
+
+  if (res.success) {
+    showProgress(false);
+    await refreshPlayButton();
+  } else {
+    setHint(`Erreur : ${res.error}`, 'error');
+    setBtn('play', '');
+  }
+}
+
 export async function refreshPlayButton() {
   const auth = getAuth();
   if (!auth) {

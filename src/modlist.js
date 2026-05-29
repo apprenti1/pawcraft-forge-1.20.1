@@ -27,7 +27,7 @@ const MODS = [
   { name: 'Better Foliage Renewed',  source: 'curseforge', projectId: 470013 },
   { name: 'Falling Leaves',          source: 'modrinth',   projectId: 'fallingleavesforge' },
   { name: 'Particular Reforged',     source: 'curseforge', projectId: 1219053 },
-  { name: 'Subtle Effects',          source: 'curseforge', projectId: 1023913 },
+  { name: 'Subtle Effects',          source: 'curseforge', projectId: 1023913, fileId: 7283799 }, // 1.13.2 — 1.14.x crash NPE subtle_effects:short_spark
   { name: 'Particle Rain',           source: 'curseforge', projectId: 421897 },
 
   // Connected Textures (OptiFine CTM via Sinytra Connector)
@@ -56,9 +56,12 @@ const RESOURCEPACKS = [
   { name: 'Patrix 32x Addon', source: 'modrinth', projectId: 'patrix-32x',   fileMatch: 'addon' },
   { name: 'CTM Overhaul',     source: 'modrinth', projectId: 'ctm-overhaul' },
   { name: 'Round Trees',      source: 'modrinth', projectId: 'round-trees' },
+  { name: 'Pawcraft GUI',     source: 'local',    keyword:   'pawcraft-gui' },
 ];
 
-const MC_VERSION    = '1.20.1';
-const FORGE_VERSION = '1.20.1-47.4.20';
+const MC_VERSION      = '1.20.1';
+const FORGE_VERSION   = '1.20.1-47.4.20';
+const MODPACK_VERSION = '1.0.1';
+const GITHUB_REPO     = 'apprenti1/pawcraft-forge-1.20.1';
 
-module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION };
+module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION, GITHUB_REPO };

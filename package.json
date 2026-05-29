@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win"
+    "build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
+    "build:guipack": "node scripts/build-gui-pack.js"
   },
   "dependencies": {
     "extract-zip": "^2.0.1",

@@ -19,6 +19,10 @@ contextBridge.exposeInMainWorld('launcher', {
   checkInstall: ()  => ipcRenderer.invoke('install:check'),
   startInstall: ()  => ipcRenderer.invoke('install:start'),
 
+  // Update
+  checkUpdate: ()  => ipcRenderer.invoke('update:check'),
+  applyUpdate: ()  => ipcRenderer.invoke('update:apply'),
+
   // Game
   launch: (auth) => ipcRenderer.invoke('game:launch', auth),
 

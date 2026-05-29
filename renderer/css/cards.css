@@ -61,6 +61,43 @@
 }
 .log-warn { color: var(--warn); }
 
+/* ── Update banner ── */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--purple-dim);
+  border: 1px solid var(--purple-mid);
+  border-radius: 8px;
+  animation: fadeup 0.3s forwards;
+}
+
+.update-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.update-banner-text svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--purple);
+  fill: none;
+  flex-shrink: 0;
+}
+
+.update-banner-text strong { color: var(--purple2); font-weight: 500; }
+
+.btn-sm {
+  padding: 5px 12px !important;
+  font-size: 11.5px !important;
+  min-width: unset !important;
+}
+
 /* ── Choice cards (login) ── */
 .choice-cards {
   display: flex;

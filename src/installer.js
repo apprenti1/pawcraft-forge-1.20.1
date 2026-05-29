@@ -81,24 +81,25 @@ async function installForge(gameDir, onProgress) {
 
 // ── Mod resolution ────────────────────────────────────────────────────────────
 
-async function resolveCurseForge(projectId, apiKey) {
+async function resolveCurseForge(projectId, apiKey, fileId) {
   if (!apiKey) throw new Error('Clé API CurseForge manquante (configurez-la dans les paramètres)');
 
-  const url =
-    `https://api.curseforge.com/v1/mods/${projectId}/files` +
-    `?gameVersion=${MC_VERSION}&modLoaderType=1&pageSize=5&sortField=5&sortOrder=desc`;
+  const url = fileId
+    ? `https://api.curseforge.com/v1/mods/${projectId}/files/${fileId}`
+    : `https://api.curseforge.com/v1/mods/${projectId}/files` +
+      `?gameVersion=${MC_VERSION}&modLoaderType=1&pageSize=5&sortField=5&sortOrder=desc`;
 
   const res = await fetch(url, {
     headers: { 'x-api-key': apiKey, Accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`CurseForge API: HTTP ${res.status} (projet ${projectId})`);
 
-  const { data } = await res.json();
-  if (!data || data.length === 0) {
+  const json = await res.json();
+  const file = fileId ? json.data : (json.data?.[0]);
+  if (!file) {
     throw new Error(`Aucun fichier trouvé sur CurseForge pour le projet ${projectId} (MC ${MC_VERSION} / Forge)`);
   }
 
-  const file = data[0];
   if (!file.downloadUrl) {
     // CurseForge redacts some URLs — build it from the numeric file ID
     const id = file.id;
@@ -156,7 +157,7 @@ async function downloadMods(gameDir, apiKey, onProgress) {
     try {
       const dl =
         mod.source === 'curseforge'
-          ? await resolveCurseForge(mod.projectId, apiKey)
+          ? await resolveCurseForge(mod.projectId, apiKey, mod.fileId)
           : await resolveModrinth(mod.projectId);
 
       await downloadFile(dl.url, path.join(modsDir, dl.filename), null, mod.name);
@@ -182,15 +183,16 @@ async function resolveModrinthAsset(projectId, gameVersion = null, fileMatch = n
   return { url: picked.url, filename: picked.filename };
 }
 
-async function downloadShaders(gameDir, onProgress) {
+async function downloadShaders(gameDir, onProgress, force = false) {
   const dir = path.join(gameDir, 'shaderpacks');
   await fs.ensureDir(dir);
   for (const shader of SHADERS) {
     const existing = fs.readdirSync(dir).find((f) => f.includes('Complementary'));
-    if (existing) {
+    if (existing && !force) {
       configureShader(gameDir, existing);
       continue;
     }
+    if (existing && force) fs.removeSync(path.join(dir, existing));
     onProgress('step', { label: `Téléchargement du shader ${shader.name}…` });
     try {
       const dl = await resolveModrinthAsset(shader.projectId);
@@ -202,17 +204,32 @@ async function downloadShaders(gameDir, onProgress) {
   }
 }
 
-async function downloadResourcePacks(gameDir, onProgress) {
+async function downloadResourcePacks(gameDir, onProgress, force = false) {
   const dir = path.join(gameDir, 'resourcepacks');
   await fs.ensureDir(dir);
   const active = [];
   for (const pack of RESOURCEPACKS) {
-    const keyword = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
+    // Local pack bundled in assets/
+    if (pack.source === 'local') {
+      const destPath = path.join(dir, pack.keyword);
+      const srcPath  = path.join(__dirname, '..', 'assets', pack.keyword);
+      if (fs.existsSync(srcPath)) {
+        if (!fs.existsSync(destPath) || force) {
+          if (fs.existsSync(destPath)) fs.removeSync(destPath);
+          await fs.copy(srcPath, destPath);
+        }
+        active.push(pack.keyword);
+      }
+      continue;
+    }
+
+    const keyword  = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
     const existing = fs.readdirSync(dir).find((f) => f.toLowerCase().includes(keyword));
-    if (existing) {
+    if (existing && !force) {
       active.push(existing);
       continue;
     }
+    if (existing && force) fs.removeSync(path.join(dir, existing));
     onProgress('step', { label: `Téléchargement du resource pack ${pack.name}…` });
     try {
       const dl = await resolveModrinthAsset(pack.projectId, MC_VERSION, pack.fileMatch || null);
@@ -302,7 +319,7 @@ async function checkInstallation(gameDir) {
   return { hasForge, hasMods, modCount, hasShaders, hasResourcePacks, ready: hasForge && hasMods && hasResourcePacks };
 }
 
-async function installAll(gameDir, apiKey, onProgress) {
+async function installAll(gameDir, apiKey, onProgress, { force = false } = {}) {
   await fs.ensureDir(gameDir);
   const state = await checkInstallation(gameDir);
 
@@ -310,13 +327,13 @@ async function installAll(gameDir, apiKey, onProgress) {
     await installForge(gameDir, onProgress);
   }
 
-  if (!state.hasMods) {
+  if (force || !state.hasMods) {
     onProgress('step', { label: 'Téléchargement des mods…' });
     await downloadMods(gameDir, apiKey, onProgress);
   }
 
-  await downloadShaders(gameDir, onProgress);
-  await downloadResourcePacks(gameDir, onProgress);
+  await downloadShaders(gameDir, onProgress, force);
+  await downloadResourcePacks(gameDir, onProgress, force);
 
   onProgress('done', { label: '✓ Installation terminée !' });
 }

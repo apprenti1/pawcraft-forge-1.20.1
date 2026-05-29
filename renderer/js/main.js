@@ -1,7 +1,7 @@
 import { initTheme, setTheme }                                    from './theme.js';
 import { loadSettings, saveSettings }                              from './settings.js';
 import { initAuth, loginOffline, loginMicrosoft, logout }          from './auth.js';
-import { refreshPlayButton, onPlay, onReinstall, handleInstallProgress, handleGameEvent } from './installer.js';
+import { refreshPlayButton, onPlay, onReinstall, handleInstallProgress, handleGameEvent, checkUpdate } from './installer.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -71,4 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Restore auth ───────────────────────────────────────────────────────────
   await initAuth();
   await refreshPlayButton();
+
+  // ── Update check (silencieux, non-bloquant) ────────────────────────────────
+  checkUpdate().catch(() => {});
 });
