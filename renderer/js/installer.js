@@ -3,36 +3,68 @@ import { getAuth, setHint } from './auth.js';
 let _installing = false;
 let _playing    = false;
 
-export async function checkUpdate() {
-  const result = await window.launcher.checkUpdate();
-  if (!result || result.upToDate) return;
-  const banner  = document.getElementById('update-banner');
-  const verEl   = document.getElementById('update-version');
-  const btnUpd  = document.getElementById('btn-update');
+export function checkLauncherUpdate(result) {
+  if (!result?.launcher || result.launcher.upToDate) return;
+  const banner = document.getElementById('banner-launcher');
+  const verEl  = document.getElementById('launcher-version');
   if (!banner) return;
-  verEl.textContent = `v${result.latestVersion}`;
+  verEl.textContent = `v${result.launcher.latestVersion}`;
   banner.classList.remove('hidden');
-  btnUpd.addEventListener('click', onUpdate, { once: true });
+
+  const btn = document.getElementById('btn-update-launcher');
+  if (!result.isPackaged) {
+    btn.textContent = 'Disponible (dev)';
+    btn.disabled = true;
+    return;
+  }
+  btn.addEventListener('click', async () => {
+    if (_installing) return;
+    banner.classList.add('hidden');
+    _installing = true;
+    showProgress(true);
+    document.getElementById('log-box').innerHTML = '';
+    setBtn('loading', 'Téléchargement…');
+
+    const dl = await window.launcher.downloadLauncherUpdate();
+    if (!dl.success) {
+      _installing = false;
+      setHint(`Erreur : ${dl.error}`, 'error');
+      setBtn('play', '');
+      showProgress(false);
+      return;
+    }
+    await window.launcher.applyLauncherUpdate(dl.tempPath);
+  }, { once: true });
 }
 
-async function onUpdate() {
-  if (_installing || _playing) return;
-  document.getElementById('update-banner').classList.add('hidden');
-  _installing = true;
-  showProgress(true);
-  document.getElementById('log-box').innerHTML = '';
-  setBtn('loading', 'Mise à jour…');
+export function checkGameFilesUpdate(result) {
+  if (!result?.gameFiles || result.gameFiles.upToDate) return;
+  const banner = document.getElementById('banner-gamefiles');
+  const verEl  = document.getElementById('gamefiles-version');
+  if (!banner) return;
+  const { installedVersion, currentVersion } = result.gameFiles;
+  verEl.textContent = installedVersion ? `v${installedVersion} → v${currentVersion}` : `v${currentVersion}`;
+  banner.classList.remove('hidden');
 
-  const res = await window.launcher.applyUpdate();
-  _installing = false;
+  document.getElementById('btn-update-gamefiles').addEventListener('click', async () => {
+    if (_installing || _playing) return;
+    banner.classList.add('hidden');
+    _installing = true;
+    showProgress(true);
+    document.getElementById('log-box').innerHTML = '';
+    setBtn('loading', 'Mise à jour…');
 
-  if (res.success) {
-    showProgress(false);
-    await refreshPlayButton();
-  } else {
-    setHint(`Erreur : ${res.error}`, 'error');
-    setBtn('play', '');
-  }
+    const res = await window.launcher.applyGameFilesUpdate();
+    _installing = false;
+
+    if (res.success) {
+      showProgress(false);
+      await refreshPlayButton();
+    } else {
+      setHint(`Erreur : ${res.error}`, 'error');
+      setBtn('play', '');
+    }
+  }, { once: true });
 }
 
 export async function refreshPlayButton() {

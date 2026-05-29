@@ -6,6 +6,7 @@ const { Authenticator } = require('minecraft-launcher-core');
 const { checkInstallation, installAll, applyGameOptions } = require('./src/installer');
 const { launch } = require('./src/launcher');
 const { checkForUpdate } = require('./src/updater');
+const { downloadExe, applyLauncherUpdate } = require('./src/self-updater');
 const { MODPACK_VERSION, GITHUB_REPO } = require('./src/modlist');
 
 let mainWindow;
@@ -181,25 +182,58 @@ ipcMain.handle('game:launch', async (_, auth) => {
 // ── Update ────────────────────────────────────────────────────────────────────
 
 ipcMain.handle('update:check', async () => {
-  const settings = getSettings();
-  const installed = settings.modpackVersion || null;
-  const result = await checkForUpdate(MODPACK_VERSION, GITHUB_REPO);
-  result.installedVersion = installed;
-  return result;
+  const gameDir       = getGameDir();
+  const versionFile   = path.join(gameDir, 'launcherversion');
+  const installedGame = fs.existsSync(versionFile)
+    ? fs.readFileSync(versionFile, 'utf8').trim()
+    : null;
+
+  const launcher = await checkForUpdate(MODPACK_VERSION, GITHUB_REPO);
+  const gameFiles = {
+    upToDate:         installedGame === MODPACK_VERSION,
+    installedVersion: installedGame,
+    currentVersion:   MODPACK_VERSION,
+  };
+  return { launcher, gameFiles, isPackaged: app.isPackaged };
 });
 
-ipcMain.handle('update:apply', async () => {
+ipcMain.handle('update:download-launcher', async () => {
+  const send = (type, data) => {
+    if (!mainWindow.isDestroyed())
+      mainWindow.webContents.send('install:progress', { type, ...data });
+  };
+  try {
+    const result = await checkForUpdate(MODPACK_VERSION, GITHUB_REPO);
+    const asset  = (result.assets || []).find(a => a.name.endsWith('.exe'));
+    if (!asset) return { success: false, error: 'Aucun .exe dans la release GitHub' };
+    const tempPath = path.join(app.getPath('temp'), 'pawcraft-update.exe');
+    await downloadExe(asset.url, tempPath, send);
+    send('done', { label: '✓ Téléchargement terminé — relancement…' });
+    return { success: true, tempPath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('update:apply-launcher', async (_, tempPath) => {
+  try {
+    applyLauncherUpdate(tempPath, process.execPath);
+    setTimeout(() => app.quit(), 500);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('update:apply-gamefiles', async () => {
   const settings = getSettings();
   const gameDir  = getGameDir();
   const send = (type, data) => {
-    if (!mainWindow.isDestroyed()) {
+    if (!mainWindow.isDestroyed())
       mainWindow.webContents.send('install:progress', { type, ...data });
-    }
   };
   try {
     await installAll(gameDir, settings.curseforgeKey, send, { force: true });
-    const updated = { ...settings, modpackVersion: MODPACK_VERSION };
-    saveSettings(updated);
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };

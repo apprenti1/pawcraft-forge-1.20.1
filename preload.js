@@ -20,8 +20,10 @@ contextBridge.exposeInMainWorld('launcher', {
   startInstall: ()  => ipcRenderer.invoke('install:start'),
 
   // Update
-  checkUpdate: ()  => ipcRenderer.invoke('update:check'),
-  applyUpdate: ()  => ipcRenderer.invoke('update:apply'),
+  checkUpdate:           ()       => ipcRenderer.invoke('update:check'),
+  downloadLauncherUpdate:()       => ipcRenderer.invoke('update:download-launcher'),
+  applyLauncherUpdate:   (tmpPath)=> ipcRenderer.invoke('update:apply-launcher', tmpPath),
+  applyGameFilesUpdate:  ()       => ipcRenderer.invoke('update:apply-gamefiles'),
 
   // Game
   launch: (auth) => ipcRenderer.invoke('game:launch', auth),

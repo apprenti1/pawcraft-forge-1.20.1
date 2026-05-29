@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const fetch = require('node-fetch');
 const { spawn, execSync } = require('child_process');
-const { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION } = require('./modlist');
+const { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION } = require('./modlist');
 const { findOrDownloadJava } = require('./java');
 
 const FORGE_INSTALLER_URL =
@@ -312,7 +312,7 @@ async function checkInstallation(gameDir) {
   const hasMods    = modCount >= MODS.length;
   const hasShaders = fs.existsSync(shadersDir) &&
     fs.readdirSync(shadersDir).some((f) => f.includes('Complementary'));
-  const packKeywords = RESOURCEPACKS.map((p) => (p.fileMatch || p.projectId.split('-')[0]).toLowerCase());
+  const packKeywords = RESOURCEPACKS.map((p) => (p.fileMatch || p.keyword || p.projectId.split('-')[0]).toLowerCase());
   const resourceFiles = fs.existsSync(resourceDir) ? fs.readdirSync(resourceDir).map((f) => f.toLowerCase()) : [];
   const hasResourcePacks = packKeywords.every((kw) => resourceFiles.some((f) => f.includes(kw)));
 
@@ -335,6 +335,7 @@ async function installAll(gameDir, apiKey, onProgress, { force = false } = {}) {
   await downloadShaders(gameDir, onProgress, force);
   await downloadResourcePacks(gameDir, onProgress, force);
 
+  fs.writeFileSync(path.join(gameDir, 'launcherversion'), MODPACK_VERSION, 'utf8');
   onProgress('done', { label: '✓ Installation terminée !' });
 }
 
