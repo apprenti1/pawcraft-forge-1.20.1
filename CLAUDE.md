@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Electron desktop launcher for the **Pawcraft** Minecraft modpack (Forge 1.20.1, ~26 mods, 2-player coop).  
+Electron desktop launcher for the **Pawcraft** Minecraft modpack (Forge 1.20.1, 31 mods).  
 Server: `hainu.fr:25565`. GitHub: `apprenti1/pawcraft-forge-1.20.1`.  
 Handles Microsoft + offline authentication, automated Forge installation, mod downloads, game launch, and modpack version updates.
 

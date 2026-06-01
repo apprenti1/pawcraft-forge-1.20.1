@@ -1,76 +1,87 @@
 import { getAuth, setHint } from './auth.js';
+import { displayVersions }  from './settings.js';
 
 let _installing = false;
 let _playing    = false;
+let _launcherUpdatePending  = false;
+let _gameFilesUpdatePending = false;
+let _lastUpdateResult       = null;
+
+// ── Update checks ─────────────────────────────────────────────────────────────
 
 export function checkLauncherUpdate(result) {
+  _lastUpdateResult = result;
   if (!result?.launcher || result.launcher.upToDate) return;
+
+  _launcherUpdatePending = true;
+
   const banner = document.getElementById('banner-launcher');
   const verEl  = document.getElementById('launcher-version');
-  if (!banner) return;
-  verEl.textContent = `v${result.launcher.latestVersion}`;
-  banner.classList.remove('hidden');
+  if (banner && verEl) {
+    verEl.textContent = `v${result.launcher.latestVersion}`;
+    banner.classList.remove('hidden');
+  }
+
+  // Block the play button
+  setBtn('disabled', '');
+  setHint(`Mise à jour requise avant de jouer`, 'warn');
 
   const btn = document.getElementById('btn-update-launcher');
+  if (!btn) return;
+
   if (!result.isPackaged) {
     btn.textContent = 'Disponible (dev)';
     btn.disabled = true;
     return;
   }
+
+  const exeAsset = (result.launcher.assets || []).find(a => a.name.endsWith('.exe'));
   btn.addEventListener('click', async () => {
     if (_installing) return;
-    banner.classList.add('hidden');
+    if (banner) banner.classList.add('hidden');
     _installing = true;
     showProgress(true);
     document.getElementById('log-box').innerHTML = '';
     setBtn('loading', 'Téléchargement…');
 
-    const dl = await window.launcher.downloadLauncherUpdate();
+    const dl = await window.launcher.downloadLauncherUpdate(exeAsset?.url);
     if (!dl.success) {
       _installing = false;
-      setHint(`Erreur : ${dl.error}`, 'error');
-      setBtn('play', '');
       showProgress(false);
+      setBtn('disabled', '');
+      setHint(`Erreur : ${dl.error}`, 'error');
       return;
     }
-    await window.launcher.applyLauncherUpdate(dl.tempPath);
+
+    const apply = await window.launcher.applyLauncherUpdate(dl.tempPath);
+    if (!apply.success) {
+      _installing = false;
+      showProgress(false);
+      setBtn('disabled', '');
+      setHint(`Erreur : ${apply.error}`, 'error');
+    }
+    // On success the app quits within 500ms — nothing more to do
   }, { once: true });
 }
 
 export function checkGameFilesUpdate(result) {
+  _lastUpdateResult = result;
   if (!result?.gameFiles || result.gameFiles.upToDate) return;
-  const banner = document.getElementById('banner-gamefiles');
-  const verEl  = document.getElementById('gamefiles-version');
-  if (!banner) return;
-  const { installedVersion, currentVersion } = result.gameFiles;
-  verEl.textContent = installedVersion ? `v${installedVersion} → v${currentVersion}` : `v${currentVersion}`;
-  banner.classList.remove('hidden');
-
-  document.getElementById('btn-update-gamefiles').addEventListener('click', async () => {
-    if (_installing || _playing) return;
-    banner.classList.add('hidden');
-    _installing = true;
-    showProgress(true);
-    document.getElementById('log-box').innerHTML = '';
-    setBtn('loading', 'Mise à jour…');
-
-    const res = await window.launcher.applyGameFilesUpdate();
-    _installing = false;
-
-    if (res.success) {
-      showProgress(false);
-      await refreshPlayButton();
-    } else {
-      setHint(`Erreur : ${res.error}`, 'error');
-      setBtn('play', '');
-    }
-  }, { once: true });
+  _gameFilesUpdatePending = true;
+  // No banner — the update runs transparently when the user clicks JOUER
 }
+
+// ── Play button state ─────────────────────────────────────────────────────────
 
 export async function refreshPlayButton() {
   const auth = getAuth();
   if (!auth) {
     setBtn('disabled', ''); setHint('Connectez-vous pour jouer'); return;
+  }
+  if (_launcherUpdatePending) {
+    setBtn('disabled', '');
+    setHint('Mise à jour requise avant de jouer', 'warn');
+    return;
   }
   const check = await window.launcher.checkInstall();
   if (!check.ready) {
@@ -81,15 +92,26 @@ export async function refreshPlayButton() {
   }
 }
 
+// ── Play / Reinstall ──────────────────────────────────────────────────────────
+
 export async function onPlay() {
-  if (_installing || _playing) return;
+  if (_installing || _playing || _launcherUpdatePending) return;
+
   const check = await window.launcher.checkInstall();
-  if (!check.ready) await startInstall();
-  else              await startGame();
+  if (!check.ready) {
+    await startInstall();
+    return;
+  }
+
+  if (_gameFilesUpdatePending) {
+    await updateGameFilesThenLaunch();
+  } else {
+    await startGame();
+  }
 }
 
 export async function onReinstall() {
-  if (_installing || _playing) return;
+  if (_installing || _playing || _launcherUpdatePending) return;
   await startInstall();
 }
 
@@ -111,6 +133,36 @@ async function startInstall() {
   }
 }
 
+async function updateGameFilesThenLaunch() {
+  _installing = true;
+  showProgress(true);
+  document.getElementById('log-box').innerHTML = '';
+  setBtn('loading', 'Mise à jour du modpack…');
+
+  const res = await window.launcher.applyGameFilesUpdate();
+  _installing = false;
+
+  if (res.success) {
+    _gameFilesUpdatePending = false;
+    showProgress(false);
+    if (_lastUpdateResult) {
+      displayVersions({
+        ..._lastUpdateResult,
+        gameFiles: {
+          ..._lastUpdateResult.gameFiles,
+          installedVersion: _lastUpdateResult.gameFiles.currentVersion,
+          upToDate: true,
+        },
+      });
+    }
+    await startGame();
+  } else {
+    setHint(`Erreur : ${res.error}`, 'error');
+    setBtn('play', '');
+    showProgress(false);
+  }
+}
+
 async function startGame() {
   _playing = true;
   setBtn('playing', ''); setHint('');
@@ -121,6 +173,8 @@ async function startGame() {
     setBtn('play', '');
   }
 }
+
+// ── IPC event handlers ────────────────────────────────────────────────────────
 
 export function handleInstallProgress(data) {
   const labelEl = document.getElementById('progress-label');
@@ -213,7 +267,7 @@ function getLineClass(text) {
   return '';
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// ── UI helpers ────────────────────────────────────────────────────────────────
 
 function showProgress(visible) {
   document.getElementById('card-progress').classList.toggle('hidden', !visible);
@@ -223,13 +277,13 @@ function setBtn(state, hint) {
   const btn = document.getElementById('btn-play');
   const btnReinstall = document.getElementById('btn-reinstall');
   const busy = state === 'loading' || state === 'playing';
-  if (btnReinstall) btnReinstall.disabled = busy;
+  if (btnReinstall) btnReinstall.disabled = busy || _launcherUpdatePending;
   switch (state) {
-    case 'disabled': btn.disabled = true;  btn.textContent = 'JOUER';    break;
-    case 'install':  btn.disabled = false; btn.textContent = 'INSTALLER'; break;
-    case 'play':     btn.disabled = false; btn.textContent = 'JOUER';    break;
-    case 'loading':  btn.disabled = true;  btn.textContent = hint;       break;
-    case 'playing':  btn.disabled = true;  btn.textContent = 'EN JEU';   break;
+    case 'disabled': btn.disabled = true;  btn.textContent = 'JOUER';     break;
+    case 'install':  btn.disabled = false; btn.textContent = 'INSTALLER';  break;
+    case 'play':     btn.disabled = false; btn.textContent = 'JOUER';     break;
+    case 'loading':  btn.disabled = true;  btn.textContent = hint;         break;
+    case 'playing':  btn.disabled = true;  btn.textContent = 'EN JEU';    break;
   }
   if (hint && state !== 'loading') setHint(hint);
 }

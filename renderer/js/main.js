@@ -1,9 +1,11 @@
 import { initTheme, setTheme }                                    from './theme.js';
-import { loadSettings, saveSettings }                              from './settings.js';
+import { loadSettings, saveSettings, displayVersions }             from './settings.js';
 import { initAuth, loginOffline, loginMicrosoft, logout }          from './auth.js';
 import { refreshPlayButton, onPlay, onReinstall, handleInstallProgress, handleGameEvent, checkLauncherUpdate, checkGameFilesUpdate } from './installer.js';
+import { loadPages }                                               from './loader.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  loadPages();
 
   // ── Theme ──────────────────────────────────────────────────────────────────
   initTheme();
@@ -47,6 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('btn-logout').addEventListener('click', logout);
 
+  document.getElementById('btn-delete-gamefiles').addEventListener('click', async () => {
+    if (!confirm('Supprimer tous les fichiers de jeu ? (Forge, mods, shaders, resourcepacks)\n\nUne réinstallation complète sera nécessaire.')) return;
+    const res = await window.launcher.deleteGameFiles();
+    if (res.success) await refreshPlayButton();
+  });
+
   document.getElementById('btn-browse-dir').addEventListener('click', async () => {
     const dir = await window.launcher.openDirPicker();
     if (dir) {
@@ -74,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Update checks (silencieux, non-bloquant) ───────────────────────────────
   window.launcher.checkUpdate().then(result => {
+    displayVersions(result);
     checkLauncherUpdate(result);
     if (!result?.launcher || result.launcher.upToDate) {
       checkGameFilesUpdate(result);

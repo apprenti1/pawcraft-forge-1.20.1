@@ -33,11 +33,11 @@ async function downloadExe(url, destPath, onProgress) {
   });
 }
 
-function applyLauncherUpdate(tempExePath, currentExePath) {
-  const batPath = path.join(path.dirname(tempExePath), 'pawcraft-update.bat');
+function applyLauncherUpdate(tempExePath, currentExePath, scriptDir) {
+  const batPath = path.join(scriptDir, 'launcher-updater.bat');
   const bat = [
     '@echo off',
-    'ping -n 3 127.0.0.1 > nul',
+    `ping -n 3 127.0.0.1 > nul`,
     `copy /y "${tempExePath}" "${currentExePath}"`,
     `start "" "${currentExePath}"`,
     'del "%~f0"',

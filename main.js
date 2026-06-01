@@ -41,9 +41,11 @@ function getGameDir() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 920,
-    height: 620,
-    resizable: false,
+    width: 1100,
+    height: 740,
+    minWidth: 780,
+    minHeight: 520,
+    resizable: true,
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -116,8 +118,9 @@ ipcMain.handle('auth:offline', async (_, username) => {
   if (!username || username.trim().length < 3) {
     return { success: false, error: 'Pseudo trop court (3 caractères min)' };
   }
-  const auth = Authenticator.getAuth(username.trim());
-  fs.writeJsonSync(AUTH_FILE, { type: 'offline', ...auth });
+  const raw  = await Authenticator.getAuth(username.trim());
+  const auth = { type: 'offline', ...raw };
+  fs.writeJsonSync(AUTH_FILE, auth);
   return { success: true, auth };
 });
 
@@ -197,17 +200,15 @@ ipcMain.handle('update:check', async () => {
   return { launcher, gameFiles, isPackaged: app.isPackaged };
 });
 
-ipcMain.handle('update:download-launcher', async () => {
+ipcMain.handle('update:download-launcher', async (_, assetUrl) => {
   const send = (type, data) => {
     if (!mainWindow.isDestroyed())
       mainWindow.webContents.send('install:progress', { type, ...data });
   };
   try {
-    const result = await checkForUpdate(MODPACK_VERSION, GITHUB_REPO);
-    const asset  = (result.assets || []).find(a => a.name.endsWith('.exe'));
-    if (!asset) return { success: false, error: 'Aucun .exe dans la release GitHub' };
+    if (!assetUrl) return { success: false, error: 'Aucun .exe dans la release GitHub' };
     const tempPath = path.join(app.getPath('temp'), 'pawcraft-update.exe');
-    await downloadExe(asset.url, tempPath, send);
+    await downloadExe(assetUrl, tempPath, send);
     send('done', { label: '✓ Téléchargement terminé — relancement…' });
     return { success: true, tempPath };
   } catch (err) {
@@ -217,8 +218,20 @@ ipcMain.handle('update:download-launcher', async () => {
 
 ipcMain.handle('update:apply-launcher', async (_, tempPath) => {
   try {
-    applyLauncherUpdate(tempPath, process.execPath);
+    const gameDir = getGameDir();
+    await fs.ensureDir(gameDir);
+    applyLauncherUpdate(tempPath, process.execPath, gameDir);
     setTimeout(() => app.quit(), 500);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('gamefiles:delete', async () => {
+  try {
+    const gameDir = getGameDir();
+    if (fs.existsSync(gameDir)) fs.removeSync(gameDir);
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };

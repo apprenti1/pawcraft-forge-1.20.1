@@ -1,0 +1,72 @@
+<div class="settings-page">
+
+  <div>
+    <div class="settings-section-title">Compte</div>
+    <div class="card">
+      <div id="settings-account-connected" class="account-row hidden">
+        <img id="settings-avatar" class="player-avatar-sm" alt="Avatar">
+        <span id="settings-username" class="account-name"></span>
+        <button id="btn-logout" class="btn-outline-danger">Déconnexion</button>
+      </div>
+      <div id="settings-account-disconnected" class="account-disconnected">Non connecté</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="settings-section-title">Jeu</div>
+    <div class="card">
+      <div class="setting-row">
+        <label for="ram-slider">RAM allouée</label>
+        <input id="ram-slider" type="range" min="2" max="16" step="1" value="4">
+        <span id="ram-value">4 Go</span>
+      </div>
+      <div class="setting-row">
+        <label for="input-game-dir">Dossier de jeu</label>
+        <div class="dir-row">
+          <input id="input-game-dir" type="text" readonly placeholder="Dossier par défaut">
+          <button id="btn-browse-dir" class="btn-icon" title="Parcourir">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="settings-section-title">API</div>
+    <div class="card">
+      <div class="setting-row">
+        <label for="input-cf-key">
+          Clé CurseForge
+          <a href="https://console.curseforge.com/" class="btn-link">Obtenir</a>
+        </label>
+        <input id="input-cf-key" type="password" placeholder="Requise pour télécharger les mods">
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="settings-section-title">Danger</div>
+    <div class="card">
+      <div class="setting-row">
+        <label>Fichiers de jeu</label>
+        <button id="btn-delete-gamefiles" class="btn-outline-danger">Supprimer tout</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="settings-section-title">Version</div>
+    <div class="card">
+      <div class="setting-row">
+        <label>Version installée</label>
+        <span id="version-installed" class="version-badge">—</span>
+      </div>
+      <div class="setting-row">
+        <label>Dernière version</label>
+        <span id="version-latest" class="version-badge">—</span>
+      </div>
+    </div>
+  </div>
+
+</div>

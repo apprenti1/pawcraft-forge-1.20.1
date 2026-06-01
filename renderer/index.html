@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self'">
   <title>Pawcraft Launcher</title>
 
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 
-  <!-- CSS modules -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/titlebar.css">
@@ -27,8 +26,6 @@
   <div class="titlebar">
     <span class="titlebar-title">Pawcraft Launcher</span>
     <div class="titlebar-right">
-
-      <!-- Theme toggle (inline SVG so color follows theme) -->
       <div class="theme-toggle" role="group" aria-label="Thème">
         <button class="toggle-btn active" id="btn-theme-dark" title="Sombre">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -37,15 +34,12 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         </button>
       </div>
-
-      <!-- Window controls (inline SVG) -->
       <button class="btn-wctl" id="btn-minimize" title="Réduire">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="12" x2="20" y2="12"/></svg>
       </button>
       <button class="btn-wctl btn-close" id="btn-close" title="Fermer">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
       </button>
-
     </div>
   </div>
 
@@ -69,354 +63,14 @@
     </button>
   </nav>
 
-  <!-- ── Pages ─────────────────────────────────────────────────────────────── -->
+  <!-- ── Pages (content injected by loader.js) ────────────────────────────── -->
   <div class="pages">
+    <div class="page active" id="page-home"></div>
+    <div class="page"        id="page-settings"></div>
+    <div class="page"        id="page-wiki"></div>
+    <div class="page"        id="page-console"></div>
+  </div>
 
-    <!-- ── Home page ──────────────────────────────────────────────────────── -->
-    <div class="page active" id="page-home">
-      <div class="home-page">
-
-        <!-- Header (same visual as wiki) -->
-        <div class="wiki-header">
-          <div class="wiki-header-top">
-            <div class="wiki-logo-paw">
-              <img src="../icon.png" alt="Pawcraft icon">
-            </div>
-            <div>
-              <div class="wiki-pack-name">PAW<span>CRAFT</span></div>
-              <div class="wiki-pack-sub">Modpack Minecraft</div>
-            </div>
-          </div>
-          <div class="meta-chips">
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Minecraft 1.20.1</span>
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Forge 1.20.1</span>
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>18 mods</span>
-          </div>
-        </div>
-
-        <!-- Auth card -->
-        <div class="card">
-
-          <!-- Not connected: choice cards -->
-          <div id="login-choices">
-            <div class="choice-cards">
-              <button class="choice-card" id="btn-choice-offline">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <div class="choice-card-title">Sans compte</div>
-                <div class="choice-card-sub">Mode hors ligne</div>
-              </button>
-              <button class="choice-card" id="btn-choice-ms">
-                <img src="icons/ms-logo.svg" class="ms-logo-sm" alt="Microsoft">
-                <div class="choice-card-title">Compte Microsoft</div>
-                <div class="choice-card-sub">Xbox Live requis</div>
-              </button>
-            </div>
-            <!-- Offline username form (shown after clicking "Sans compte") -->
-            <div id="offline-form" class="hidden" style="margin-top:10px">
-              <div class="input-row">
-                <input id="input-username" type="text" placeholder="Votre pseudo" maxlength="16" autocomplete="off">
-                <button id="btn-login-offline" class="btn btn-accent">OK</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Connected: player info + skin -->
-          <div id="player-info" class="player-info hidden">
-            <div class="player-avatar-wrap">
-              <img id="player-avatar" class="player-avatar" alt="Avatar">
-            </div>
-            <div>
-              <div class="player-connected-label">Connecté</div>
-              <div id="auth-label" class="player-name"></div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Banner : nouveau launcher disponible -->
-        <div id="banner-launcher" class="update-banner hidden">
-          <div class="update-banner-text">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span>Nouveau launcher — <strong id="launcher-version"></strong></span>
-          </div>
-          <button id="btn-update-launcher" class="btn btn-accent btn-sm">Télécharger</button>
-        </div>
-
-        <!-- Banner : fichiers de jeu obsolètes -->
-        <div id="banner-gamefiles" class="update-banner hidden">
-          <div class="update-banner-text">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-            <span>Fichiers de jeu obsolètes — <strong id="gamefiles-version"></strong></span>
-          </div>
-          <button id="btn-update-gamefiles" class="btn btn-accent btn-sm">Mettre à jour</button>
-        </div>
-
-        <!-- Progress card (hidden by default) -->
-        <div class="card hidden" id="card-progress">
-          <p id="progress-label">Préparation…</p>
-          <div class="progress-track">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-          <div id="log-box" class="log-box"></div>
-        </div>
-
-        <!-- Play zone -->
-        <div class="play-zone">
-          <button id="btn-play" class="btn-play" disabled>JOUER</button>
-          <p id="play-hint" class="play-hint"></p>
-          <button id="btn-reinstall" class="btn-reinstall">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-            Réinstaller
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ── Settings page ──────────────────────────────────────────────────── -->
-    <div class="page" id="page-settings">
-      <div class="settings-page">
-
-        <!-- Section : Compte -->
-        <div>
-          <div class="settings-section-title">Compte</div>
-          <div class="card">
-            <!-- Connected -->
-            <div id="settings-account-connected" class="account-row hidden">
-              <img id="settings-avatar" class="player-avatar-sm" alt="Avatar">
-              <span id="settings-username" class="account-name"></span>
-              <button id="btn-logout" class="btn-outline-danger">Déconnexion</button>
-            </div>
-            <!-- Disconnected -->
-            <div id="settings-account-disconnected" class="account-disconnected">
-              Non connecté
-            </div>
-          </div>
-        </div>
-
-        <!-- Section : Jeu -->
-        <div>
-          <div class="settings-section-title">Jeu</div>
-          <div class="card">
-            <div class="setting-row">
-              <label for="ram-slider">RAM allouée</label>
-              <input id="ram-slider" type="range" min="2" max="16" step="1" value="4">
-              <span id="ram-value">4 Go</span>
-            </div>
-            <div class="setting-row">
-              <label for="input-game-dir">Dossier de jeu</label>
-              <div class="dir-row">
-                <input id="input-game-dir" type="text" readonly placeholder="Dossier par défaut">
-                <button id="btn-browse-dir" class="btn-icon" title="Parcourir">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section : API -->
-        <div>
-          <div class="settings-section-title">API</div>
-          <div class="card">
-            <div class="setting-row">
-              <label for="input-cf-key">
-                Clé CurseForge
-                <a href="https://console.curseforge.com/" class="btn-link">Obtenir</a>
-              </label>
-              <input id="input-cf-key" type="password" placeholder="Requise pour télécharger les mods">
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ── Wiki page ──────────────────────────────────────────────────────── -->
-    <div class="page" id="page-wiki">
-      <div class="wiki-page">
-
-        <div class="wiki-header">
-          <div class="wiki-header-top">
-            <div class="wiki-logo-paw">
-              <img src="../icon.png" alt="Pawcraft icon">
-            </div>
-            <div>
-              <div class="wiki-pack-name">PAW<span>CRAFT</span></div>
-              <div class="wiki-pack-sub">Modpack Minecraft</div>
-            </div>
-          </div>
-          <div class="meta-chips">
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Minecraft 1.20.1</span>
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Forge</span>
-            <span class="chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>18 mods</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Tech &amp; automatisation</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Create</div><div class="mod-desc">Automatisation mécanique, engrenages, convoyeurs, presses</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/create" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Applied Energistics 2</div><div class="mod-desc">Réseau de stockage numérique, autocrafting</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/applied-energistics-2" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-tech"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
-              <div class="mod-info"><div class="mod-name">CC: Tweaked</div><div class="mod-desc">Ordinateurs et robots programmables en Lua</div></div>
-              <div class="mod-right"><span class="warn-tag">Modrinth only</span><a class="link-btn" href="https://modrinth.com/mod/gu7yAkud" target="_blank">Modrinth <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Mods de compatibilité</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Create: Applied Kinetics</div><div class="mod-desc">Compat Create × AE2</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/create-applied-kinetics" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-              <div class="mod-info"><div class="mod-name">CC×Create Compat Patch</div><div class="mod-desc">Compat Create × CC — nécessaire seulement avec Create 6.0</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/computercraft-create-compatibility-patch" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-compat"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Ars Creo</div><div class="mod-desc">Compat Create × Ars Nouveau</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ars-creo" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Magie</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-magic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 5 4 4"/><path d="M13 7 8.7 2.7a2.12 2.12 0 0 0-3 3L7 7"/><path d="m7 7-2 2a2 2 0 0 0 0 2.83l8 8a2 2 0 0 0 2.83 0L21 14a2 2 0 0 0 0-2.83l-8-8z"/><path d="M9.5 14.5 16 8"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Ars Nouveau</div><div class="mod-desc">Création de sorts, familiers, glyphes, magie arcanique</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ars-nouveau" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Exploration</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-explore"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Waystones</div><div class="mod-desc">Téléportation entre bornes — requiert Balm</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/waystones" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">QoL &amp; interface</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
-              <div class="mod-info"><div class="mod-name">JEI</div><div class="mod-desc">Just Enough Items — recettes et usages</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/jei" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
-              <div class="mod-info"><div class="mod-name">JADE</div><div class="mod-desc">Infos de blocs/entités au survol — successeur de WAILA</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/jade" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-qol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></div>
-              <div class="mod-info"><div class="mod-name">FTB Chunks</div><div class="mod-desc">Claims de chunks, carte en ligne</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/ftb-chunks-forge" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Performance &amp; shaders</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-perf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Embeddium</div><div class="mod-desc">Fork de Sodium pour Forge — optimisation du rendu</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/embeddium" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-perf"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Oculus</div><div class="mod-desc">Fork d'Iris pour Forge — support des shaderpacks</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/oculus" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><span class="section-label">Cosmétique client</span><div class="section-line"></div></div>
-          <div class="mod-list">
-            <div class="mod-row">
-              <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Better Foliage Renewed</div><div class="mod-desc">Feuillages et herbes plus denses et détaillés</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/better-foliage-renewed" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 14c.6-1.28 1-2.61 1-4a6 6 0 0 0-12 0c0 1.39.4 2.72 1 4"/><path d="m8.5 19 3.5 3 3.5-3"/><path d="M12 17v5"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Falling Leaves</div><div class="mod-desc">Particules de feuilles tombant des arbres</div></div>
-              <div class="mod-right"><span class="warn-tag">Modrinth only</span><a class="link-btn" href="https://modrinth.com/mod/fallingleavesforge" target="_blank">Modrinth <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Particular Reforged</div><div class="mod-desc">Particules ambiantes contextuelles (lucioles, cascades, poussière)</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/particular-reforged" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Subtle Effects</div><div class="mod-desc">Détails subtils via particules + sons (eau, vapeur, poussière)</div></div>
-              <div class="mod-right"><span class="warn-tag server">Serveur requis</span><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/subtle-effects" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-            <div class="mod-row">
-              <div class="mod-icon icon-cosm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/><path d="m16 20-2 2-2-2"/><path d="m12 22 0-10"/></svg></div>
-              <div class="mod-info"><div class="mod-name">Particle Rain</div><div class="mod-desc">Pluie et météo remplacées par des particules</div></div>
-              <div class="mod-right"><a class="link-btn" href="https://www.curseforge.com/minecraft/mc-mods/particle-rain" target="_blank">CurseForge <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="wiki-note">
-          <strong>Notes d'installation</strong>
-          <ul>
-            <li><strong>CC: Tweaked</strong> et <strong>Falling Leaves</strong> sont sur Modrinth uniquement — à installer manuellement si tu utilises le launcher CurseForge.</li>
-            <li><strong>Subtle Effects</strong> doit être installé côté serveur <em>et</em> client.</li>
-            <li><strong>Waystones</strong> requiert le mod <strong>Balm</strong> comme dépendance.</li>
-            <li>La dimension de minage reste à définir.</li>
-          </ul>
-        </div>
-
-        <div class="wiki-footer">Pawcraft — Forge 1.20.1</div>
-
-      </div>
-    </div>
-
-    <!-- ── Console page ─────────────────────────────────────────────────── -->
-    <div class="page" id="page-console">
-      <div class="console-page">
-        <div class="console-toolbar">
-          <span class="console-status" id="console-status">En attente du lancement…</span>
-          <button class="btn-console-clear" id="btn-console-clear" title="Effacer">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Effacer
-          </button>
-        </div>
-        <div class="console-output" id="console-output"></div>
-      </div>
-    </div>
-
-  </div><!-- /.pages -->
-
-  <!-- JS entry point (ES modules) -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

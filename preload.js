@@ -21,9 +21,19 @@ contextBridge.exposeInMainWorld('launcher', {
 
   // Update
   checkUpdate:           ()       => ipcRenderer.invoke('update:check'),
-  downloadLauncherUpdate:()       => ipcRenderer.invoke('update:download-launcher'),
+  downloadLauncherUpdate:(url)    => ipcRenderer.invoke('update:download-launcher', url),
   applyLauncherUpdate:   (tmpPath)=> ipcRenderer.invoke('update:apply-launcher', tmpPath),
   applyGameFilesUpdate:  ()       => ipcRenderer.invoke('update:apply-gamefiles'),
+
+  // Page loader (synchronous, local files only)
+  readPageHTML: (page) => {
+    const path = require('path');
+    const fs   = require('fs');
+    return fs.readFileSync(path.join(__dirname, 'renderer', 'pages', `${page}.html`), 'utf8');
+  },
+
+  // Game files
+  deleteGameFiles: () => ipcRenderer.invoke('gamefiles:delete'),
 
   // Game
   launch: (auth) => ipcRenderer.invoke('game:launch', auth),

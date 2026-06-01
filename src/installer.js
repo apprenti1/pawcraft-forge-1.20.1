@@ -204,9 +204,17 @@ async function downloadShaders(gameDir, onProgress, force = false) {
   }
 }
 
-async function downloadResourcePacks(gameDir, onProgress, force = false) {
+async function downloadResourcePacks(gameDir, onProgress, force = false, apiKey = null) {
   const dir = path.join(gameDir, 'resourcepacks');
   await fs.ensureDir(dir);
+
+  // On force, wipe all .zip files so stale packs (e.g. Patrix after removal) don't linger
+  if (force) {
+    for (const f of fs.readdirSync(dir)) {
+      if (f.toLowerCase().endsWith('.zip')) fs.removeSync(path.join(dir, f));
+    }
+  }
+
   const active = [];
   for (const pack of RESOURCEPACKS) {
     // Local pack bundled in assets/
@@ -223,7 +231,7 @@ async function downloadResourcePacks(gameDir, onProgress, force = false) {
       continue;
     }
 
-    const keyword  = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
+    const keyword  = (pack.fileMatch || pack.keyword || String(pack.projectId).split('-')[0]).toLowerCase();
     const existing = fs.readdirSync(dir).find((f) => f.toLowerCase().includes(keyword));
     if (existing && !force) {
       active.push(existing);
@@ -232,14 +240,16 @@ async function downloadResourcePacks(gameDir, onProgress, force = false) {
     if (existing && force) fs.removeSync(path.join(dir, existing));
     onProgress('step', { label: `Téléchargement du resource pack ${pack.name}…` });
     try {
-      const dl = await resolveModrinthAsset(pack.projectId, MC_VERSION, pack.fileMatch || null);
+      const dl = pack.source === 'curseforge'
+        ? await resolveCurseForge(pack.projectId, apiKey, pack.fileId)
+        : await resolveModrinthAsset(pack.projectId, MC_VERSION, pack.fileMatch || null);
       await downloadFile(dl.url, path.join(dir, dl.filename), onProgress, pack.name);
       active.push(dl.filename);
     } catch (err) {
       onProgress('warn', { label: `⚠ Resource pack ${pack.name}: ${err.message}` });
     }
   }
-  if (active.length) configureResourcePacks(gameDir, active);
+  if (active.length) configureResourcePacks(gameDir, active, force);
 }
 
 function configureShader(gameDir, filename) {
@@ -259,7 +269,7 @@ function configureShader(gameDir, filename) {
   fs.writeFileSync(oculusProps, content, 'utf8');
 }
 
-function configureResourcePacks(gameDir, filenames) {
+function configureResourcePacks(gameDir, filenames, force = false) {
   const optionsPath = path.join(gameDir, 'options.txt');
   const packEntries = filenames.map((f) => `file/${f}`);
   const base = ['vanilla', 'mod_resources'];
@@ -279,12 +289,12 @@ function configureResourcePacks(gameDir, filenames) {
   let content = fs.readFileSync(optionsPath, 'utf8');
   const match = content.match(/^resourcePacks:\[(.*)\]/m);
 
-  // Preserve any other mod-injected entries not already in our fixed list
-  const preserved = match
+  // On force reinstall, drop all old entries — no preservation of stale packs
+  const preserved = force ? [] : (match
     ? match[1].split(',')
         .map((s) => s.trim().replace(/^"|"$/g, ''))
         .filter((s) => s && !fixed.has(s))
-    : [];
+    : []);
 
   const line = `resourcePacks:[${[...base, ...packEntries, ...virtual, ...preserved].map((p) => `"${p}"`).join(',')}]`;
 
@@ -312,7 +322,7 @@ async function checkInstallation(gameDir) {
   const hasMods    = modCount >= MODS.length;
   const hasShaders = fs.existsSync(shadersDir) &&
     fs.readdirSync(shadersDir).some((f) => f.includes('Complementary'));
-  const packKeywords = RESOURCEPACKS.map((p) => (p.fileMatch || p.keyword || p.projectId.split('-')[0]).toLowerCase());
+  const packKeywords = RESOURCEPACKS.map((p) => (p.fileMatch || p.keyword || String(p.projectId).split('-')[0]).toLowerCase());
   const resourceFiles = fs.existsSync(resourceDir) ? fs.readdirSync(resourceDir).map((f) => f.toLowerCase()) : [];
   const hasResourcePacks = packKeywords.every((kw) => resourceFiles.some((f) => f.includes(kw)));
 
@@ -333,7 +343,7 @@ async function installAll(gameDir, apiKey, onProgress, { force = false } = {}) {
   }
 
   await downloadShaders(gameDir, onProgress, force);
-  await downloadResourcePacks(gameDir, onProgress, force);
+  await downloadResourcePacks(gameDir, onProgress, force, apiKey);
 
   fs.writeFileSync(path.join(gameDir, 'launcherversion'), MODPACK_VERSION, 'utf8');
   onProgress('done', { label: '✓ Installation terminée !' });
@@ -345,7 +355,7 @@ function applyGameOptions(gameDir) {
 
   if (fs.existsSync(resourceDir)) {
     for (const pack of RESOURCEPACKS) {
-      const kw = (pack.fileMatch || pack.projectId.split('-')[0]).toLowerCase();
+      const kw = (pack.fileMatch || pack.keyword || pack.projectId.split('-')[0]).toLowerCase();
       const found = fs.readdirSync(resourceDir).find((f) => f.toLowerCase().includes(kw));
       if (found) filenames.push(found);
     }

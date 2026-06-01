@@ -11,7 +11,7 @@ export async function initAuth() {
 export function applyAuth(auth) {
   _auth = auth;
   const name = auth.name ?? auth.selectedProfile?.name ?? 'Joueur';
-  const uuid = auth.uuid ?? auth.selectedProfile?.id ?? auth.name;
+  const uuid = auth.uuid ?? auth.selectedProfile?.id;
 
   // Home page: hide choices, show player info
   document.getElementById('login-choices').classList.add('hidden');
@@ -19,9 +19,12 @@ export function applyAuth(auth) {
   document.getElementById('player-info').classList.remove('hidden');
   document.getElementById('auth-label').textContent = name;
 
-  // Load Crafatar avatar
-  const avatarUrl = `https://api.mineatar.io/face/${encodeURIComponent(uuid)}?size=64&overlay=true`;
-  _setAvatar(document.getElementById('player-avatar'), avatarUrl);
+  // Load avatar only when uuid is a real value
+  if (uuid) {
+    const avatarUrl = `https://api.mineatar.io/face/${encodeURIComponent(uuid)}?size=64&overlay=true`;
+    _setAvatar(document.getElementById('player-avatar'), avatarUrl);
+    _setAvatar(document.getElementById('settings-avatar'), avatarUrl);
+  }
 
   // Settings page
   const connected    = document.getElementById('settings-account-connected');
@@ -30,7 +33,6 @@ export function applyAuth(auth) {
   if (disconnected) disconnected.classList.add('hidden');
   const settingsUsername = document.getElementById('settings-username');
   if (settingsUsername) settingsUsername.textContent = name;
-  _setAvatar(document.getElementById('settings-avatar'), avatarUrl);
 
   refreshPlayButton();
 }

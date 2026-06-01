@@ -173,6 +173,8 @@
 .icon-cosm    svg { stroke: var(--pink); }
 .icon-compat  { background: var(--purple-dim); border: 1px solid var(--border2); }
 .icon-compat  svg { stroke: var(--purple); }
+.icon-dep     { background: var(--gray-dim);   border: 1px solid var(--border); }
+.icon-dep     svg { stroke: var(--text3); }
 
 .mod-info { flex: 1; min-width: 0; }
 

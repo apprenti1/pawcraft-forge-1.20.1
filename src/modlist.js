@@ -52,16 +52,15 @@ const SHADERS = [
 ];
 
 const RESOURCEPACKS = [
-  { name: 'Patrix 32x Basic', source: 'modrinth', projectId: 'patrix-32x',   fileMatch: 'basic' },
-  { name: 'Patrix 32x Addon', source: 'modrinth', projectId: 'patrix-32x',   fileMatch: 'addon' },
-  { name: 'CTM Overhaul',     source: 'modrinth', projectId: 'ctm-overhaul' },
-  { name: 'Round Trees',      source: 'modrinth', projectId: 'round-trees' },
-  { name: 'Pawcraft GUI',     source: 'local',    keyword:   'pawcraft-gui' },
+  { name: 'Faithful 32x',  source: 'curseforge', projectId: 436482, fileId: 7398277, keyword: 'faithful' },
+  { name: 'CTM Overhaul',  source: 'modrinth',   projectId: 'ctm-overhaul' },
+  { name: 'Round Trees',   source: 'modrinth',   projectId: 'round-trees' },
+  { name: 'Pawcraft GUI',  source: 'local',      keyword:   'pawcraft-gui' },
 ];
 
 const MC_VERSION      = '1.20.1';
 const FORGE_VERSION   = '1.20.1-47.4.20';
-const MODPACK_VERSION = '1.0.1';
+const MODPACK_VERSION = '1.0.2';
 const GITHUB_REPO     = 'apprenti1/pawcraft-forge-1.20.1';
 
 module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION, GITHUB_REPO };
