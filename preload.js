@@ -1,4 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const _path = require('path');
+const _fs   = require('fs');
 
 contextBridge.exposeInMainWorld('launcher', {
   // Window
@@ -26,11 +28,9 @@ contextBridge.exposeInMainWorld('launcher', {
   applyGameFilesUpdate:  ()       => ipcRenderer.invoke('update:apply-gamefiles'),
 
   // Page loader (synchronous, local files only)
-  readPageHTML: (page) => {
-    const path = require('path');
-    const fs   = require('fs');
-    return fs.readFileSync(path.join(__dirname, 'renderer', 'pages', `${page}.html`), 'utf8');
-  },
+  readPageHTML: (page) => _fs.readFileSync(
+    _path.join(__dirname, 'renderer', 'pages', `${page}.html`), 'utf8'
+  ),
 
   // Game files
   deleteGameFiles: () => ipcRenderer.invoke('gamefiles:delete'),

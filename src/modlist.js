@@ -11,8 +11,9 @@ const MODS = [
   { name: 'Ars Nouveau',             source: 'curseforge', projectId: 401955 },
 
   // Exploration
-  { name: 'Waystones',               source: 'curseforge', projectId: 245755 },
-  { name: 'Balm',                    source: 'curseforge', projectId: 531761 },
+  { name: 'Waystones',                 source: 'curseforge', projectId: 245755 },
+  { name: 'Balm',                      source: 'curseforge', projectId: 531761 },
+  { name: 'Advanced Mining Dimension', source: 'curseforge', projectId: 332640 },
 
   // QoL & Interface
   { name: 'JEI',                     source: 'curseforge', projectId: 238222 },
@@ -60,7 +61,7 @@ const RESOURCEPACKS = [
 
 const MC_VERSION      = '1.20.1';
 const FORGE_VERSION   = '1.20.1-47.4.20';
-const MODPACK_VERSION = '1.0.2';
+const MODPACK_VERSION = '1.0.3';
 const GITHUB_REPO     = 'apprenti1/pawcraft-forge-1.20.1';
 
 module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION, GITHUB_REPO };
