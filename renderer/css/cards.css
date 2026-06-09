@@ -58,6 +58,9 @@
   margin-top: 8px;
   line-height: 1.6;
   transition: color 0.25s;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
 }
 .log-warn { color: var(--warn); }
 

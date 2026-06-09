@@ -3,6 +3,10 @@ const _path = require('path');
 const _fs   = require('fs');
 
 contextBridge.exposeInMainWorld('launcher', {
+  // Platform info
+  getPlatform: () => process.platform,
+  getArch: () => process.arch,
+
   // Window
   close:    () => ipcRenderer.invoke('window:close'),
   minimize: () => ipcRenderer.invoke('window:minimize'),

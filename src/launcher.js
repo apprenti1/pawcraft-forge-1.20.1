@@ -32,6 +32,8 @@ function getForgeJvmArgs(gameDir) {
 async function launch(auth, gameDir, ramGB, onEvent) {
   const launcher = new Client();
 
+  console.log('[Launcher] Auth object:', JSON.stringify(auth, null, 2));
+
   launcher.on('debug',    (e) => onEvent('debug',    e));
   launcher.on('data',     (e) => onEvent('log',      e));
   launcher.on('progress', (e) => onEvent('progress', e));

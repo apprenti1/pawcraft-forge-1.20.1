@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs-extra');
-const fetch = require('node-fetch');
+const https = require('https');
+const http = require('http');
 const { spawn, execSync } = require('child_process');
 const { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION } = require('./modlist');
 const { findOrDownloadJava } = require('./java');
@@ -19,32 +20,74 @@ function getAssetsDir() {
 const FORGE_INSTALLER_URL =
   `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 
+// ── HTTPS helper with IPv4 and redirects ─────────────────────────────────────
+
+function httpsGet(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const protocol = url.startsWith('https') ? https : http;
+    const req = protocol.get(url, {
+      headers: { 'User-Agent': 'PawcraftLauncher/1.0' },
+      family: 4, // Force IPv4
+      ...options
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        resolve(httpsGet(res.headers.location, options));
+        return;
+      }
+      resolve(res);
+    });
+    req.on('error', reject);
+    req.setTimeout(30000, () => {
+      req.destroy();
+      reject(new Error('Request timeout'));
+    });
+  });
+}
+
+async function fetchJson(url, headers = {}) {
+  const res = await httpsGet(url, { headers: { 'User-Agent': 'PawcraftLauncher/1.0', ...headers } });
+  if (res.statusCode !== 200) {
+    res.resume();
+    throw new Error(`HTTP ${res.statusCode}`);
+  }
+  return new Promise((resolve, reject) => {
+    let data = '';
+    res.on('data', chunk => data += chunk);
+    res.on('end', () => {
+      try {
+        resolve(JSON.parse(data));
+      } catch (e) {
+        reject(new Error('Invalid JSON response'));
+      }
+    });
+    res.on('error', reject);
+  });
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function downloadFile(url, destPath, onProgress, label) {
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'PawcraftLauncher/1.0' },
-    follow: 5,
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+  const res = await httpsGet(url);
+  if (res.statusCode !== 200) throw new Error(`HTTP ${res.statusCode} — ${url}`);
 
-  const total = parseInt(res.headers.get('content-length') || '0', 10);
+  const total = parseInt(res.headers['content-length'] || '0', 10);
   let downloaded = 0;
 
   await fs.ensureDir(path.dirname(destPath));
   const out = fs.createWriteStream(destPath);
 
   return new Promise((resolve, reject) => {
-    res.body.on('data', (chunk) => {
+    res.on('data', (chunk) => {
       downloaded += chunk.length;
-      out.write(chunk);
       if (total && onProgress) {
         onProgress('download', { label, percent: Math.round((downloaded / total) * 100) });
       }
     });
-    res.body.on('end', () => { out.end(); resolve(); });
-    res.body.on('error', reject);
+    res.pipe(out);
+    res.on('error', reject);
     out.on('error', reject);
+    out.on('finish', resolve);
   });
 }
 
@@ -100,12 +143,12 @@ async function resolveCurseForge(projectId, apiKey, fileId) {
     : `https://api.curseforge.com/v1/mods/${projectId}/files` +
       `?gameVersion=${MC_VERSION}&modLoaderType=1&pageSize=5&sortField=5&sortOrder=desc`;
 
-  const res = await fetch(url, {
-    headers: { 'x-api-key': apiKey, Accept: 'application/json' },
-  });
-  if (!res.ok) throw new Error(`CurseForge API: HTTP ${res.status} (projet ${projectId})`);
-
-  const json = await res.json();
+  let json;
+  try {
+    json = await fetchJson(url, { 'x-api-key': apiKey, Accept: 'application/json' });
+  } catch (e) {
+    throw new Error(`CurseForge API: ${e.message} (projet ${projectId})`);
+  }
   const file = fileId ? json.data : (json.data?.[0]);
   if (!file) {
     throw new Error(`Aucun fichier trouvé sur CurseForge pour le projet ${projectId} (MC ${MC_VERSION} / Forge)`);
@@ -131,12 +174,12 @@ async function resolveModrinth(projectId) {
     `?game_versions=${encodeURIComponent(JSON.stringify([MC_VERSION]))}` +
     `&loaders=${encodeURIComponent(JSON.stringify(['forge']))}` ;
 
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'PawcraftLauncher/1.0 (contact@pawcraft.local)' },
-  });
-  if (!res.ok) throw new Error(`Modrinth API: HTTP ${res.status} (projet ${projectId})`);
-
-  const versions = await res.json();
+  let versions;
+  try {
+    versions = await fetchJson(url);
+  } catch (e) {
+    throw new Error(`Modrinth API: ${e.message} (projet ${projectId})`);
+  }
   if (!versions || versions.length === 0) {
     throw new Error(`Aucune version trouvée sur Modrinth pour ${projectId} (MC ${MC_VERSION} / Forge)`);
   }
@@ -183,9 +226,13 @@ async function downloadMods(gameDir, apiKey, onProgress) {
 async function resolveModrinthAsset(projectId, gameVersion = null, fileMatch = null) {
   let url = `https://api.modrinth.com/v2/project/${projectId}/version`;
   if (gameVersion) url += `?game_versions=${encodeURIComponent(JSON.stringify([gameVersion]))}`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'PawcraftLauncher/1.0' } });
-  if (!res.ok) throw new Error(`Modrinth: HTTP ${res.status} (${projectId})`);
-  const versions = await res.json();
+
+  let versions;
+  try {
+    versions = await fetchJson(url);
+  } catch (e) {
+    throw new Error(`Modrinth: ${e.message} (${projectId})`);
+  }
   if (!versions || versions.length === 0) throw new Error(`Aucune version trouvée pour ${projectId} (MC ${gameVersion || 'any'})`);
   const files = versions[0].files;
   const picked = fileMatch

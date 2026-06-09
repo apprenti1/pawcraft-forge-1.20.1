@@ -4,6 +4,7 @@ copyright: Copyright © 2024 Pawcraft
 
 directories:
   output: dist
+  buildResources: build
 
 files:
   - "**/*"
@@ -17,10 +18,79 @@ files:
 asarUnpack:
   - "assets/**"
 
+# ═══════════════════════════════════════════════════════════
+# WINDOWS (build depuis Windows ou via GitHub Actions CI/CD)
+# ═══════════════════════════════════════════════════════════
 win:
-  icon: icon_converted.png
+  icon: build/icons/256x256.png
   target:
     - target: portable
       arch: [x64]
+    - target: nsis
+      arch: [x64]
+  # ia32 disponible via: npm run build:win32
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+# ═══════════════════════════════════════════════════════════
+# macOS
+# ═══════════════════════════════════════════════════════════
+mac:
+  icon: build/icons/1024x1024.png
+  category: public.app-category.games
+  darkModeSupport: true
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+
+dmg:
+  iconSize: 100
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# ═══════════════════════════════════════════════════════════
+# LINUX
+# ═══════════════════════════════════════════════════════════
+linux:
+  icon: build/icons
+  category: Game
+  maintainer: Pawcraft Team
+  vendor: Pawcraft
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+  # RPM disponible via: npm run build:rpm (nécessite rpmbuild)
+
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libuuid1
+
+appImage:
+  artifactName: "${productName}-${version}-${arch}.AppImage"
 
 publish: null

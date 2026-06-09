@@ -1,12 +1,16 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const dns = require('dns');
 const path = require('path');
 const fs = require('fs-extra');
+
+// Force IPv4 globally (fixes IPv6 connectivity issues)
+dns.setDefaultResultOrder('ipv4first');
 const { Auth } = require('msmc');
 const { Authenticator } = require('minecraft-launcher-core');
 const { checkInstallation, installAll, applyGameOptions } = require('./src/installer');
 const { launch } = require('./src/launcher');
 const { checkForUpdate } = require('./src/updater');
-const { downloadExe, applyLauncherUpdate } = require('./src/self-updater');
+const { downloadUpdate, applyLauncherUpdate, getTempExtension } = require('./src/self-updater');
 const { MODPACK_VERSION, GITHUB_REPO } = require('./src/modlist');
 
 let mainWindow;
@@ -207,10 +211,17 @@ ipcMain.handle('update:download-launcher', async (_, assetUrl) => {
       mainWindow.webContents.send('install:progress', { type, ...data });
   };
   try {
-    if (!assetUrl) return { success: false, error: 'Aucun .exe dans la release GitHub' };
-    const tempPath = path.join(app.getPath('temp'), 'pawcraft-update.exe');
-    await downloadExe(assetUrl, tempPath, send);
-    send('done', { label: '✓ Téléchargement terminé — relancement…' });
+    if (!assetUrl) {
+      const platformNames = { win32: 'Windows', darwin: 'macOS', linux: 'Linux' };
+      const platformName = platformNames[process.platform] || process.platform;
+      return { success: false, error: `Aucun fichier ${platformName} dans la release GitHub` };
+    }
+
+    const ext = getTempExtension();
+    const tempPath = path.join(app.getPath('temp'), `pawcraft-update${ext}`);
+
+    await downloadUpdate(assetUrl, tempPath, send);
+    send('done', { label: 'Téléchargement terminé - redémarrage...' });
     return { success: true, tempPath };
   } catch (err) {
     return { success: false, error: err.message };

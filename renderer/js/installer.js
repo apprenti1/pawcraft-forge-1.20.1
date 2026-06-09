@@ -35,7 +35,35 @@ export function checkLauncherUpdate(result) {
     return;
   }
 
-  const exeAsset = (result.launcher.assets || []).find(a => a.name.endsWith('.exe'));
+  // Détection asset selon plateforme
+  function findPlatformAsset(assets) {
+    if (!assets || !assets.length) return null;
+    const platform = window.launcher.getPlatform();
+    const arch = window.launcher.getArch();
+
+    switch (platform) {
+      case 'win32':
+        return assets.find(a => a.name.endsWith('.exe'));
+      case 'darwin':
+        // Préférer l'architecture correspondante
+        if (arch === 'arm64') {
+          return assets.find(a => a.name.includes('arm64') && a.name.endsWith('.dmg'))
+              || assets.find(a => a.name.endsWith('.dmg'))
+              || assets.find(a => a.name.includes('mac') && a.name.endsWith('.zip'));
+        }
+        return assets.find(a => a.name.endsWith('.dmg') && !a.name.includes('arm64'))
+            || assets.find(a => a.name.endsWith('.dmg'))
+            || assets.find(a => a.name.includes('mac') && a.name.endsWith('.zip'));
+      case 'linux':
+        return assets.find(a => a.name.endsWith('.AppImage'))
+            || assets.find(a => a.name.endsWith('.deb'))
+            || assets.find(a => a.name.includes('linux') && a.name.endsWith('.tar.gz'));
+      default:
+        return null;
+    }
+  }
+
+  const platformAsset = findPlatformAsset(result.launcher.assets);
   btn.addEventListener('click', async () => {
     if (_installing) return;
     if (banner) banner.classList.add('hidden');
@@ -44,7 +72,7 @@ export function checkLauncherUpdate(result) {
     document.getElementById('log-box').innerHTML = '';
     setBtn('loading', 'Téléchargement…');
 
-    const dl = await window.launcher.downloadLauncherUpdate(exeAsset?.url);
+    const dl = await window.launcher.downloadLauncherUpdate(platformAsset?.url);
     if (!dl.success) {
       _installing = false;
       showProgress(false);

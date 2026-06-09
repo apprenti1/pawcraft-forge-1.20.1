@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(identify:*)",
+      "Bash(ls:*)",
+      "Bash(file:*)"
+    ]
+  }
+}
