@@ -61,7 +61,7 @@ const RESOURCEPACKS = [
 
 const MC_VERSION      = '1.20.1';
 const FORGE_VERSION   = '1.20.1-47.4.20';
-const MODPACK_VERSION = '1.0.3';
+const MODPACK_VERSION = '1.0.6';
 const GITHUB_REPO     = 'apprenti1/pawcraft-forge-1.20.1';
 
 module.exports = { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION, GITHUB_REPO };

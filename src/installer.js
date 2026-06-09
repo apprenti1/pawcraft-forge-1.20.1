@@ -5,6 +5,17 @@ const { spawn, execSync } = require('child_process');
 const { MODS, SHADERS, RESOURCEPACKS, MC_VERSION, FORGE_VERSION, MODPACK_VERSION } = require('./modlist');
 const { findOrDownloadJava } = require('./java');
 
+// Resolve the assets/ folder whether running from source or from a packaged ASAR.
+// fs.existsSync is patched by Electron and returns true inside the ASAR, so we
+// use app.isPackaged as the reliable signal.
+const { app } = require('electron');
+function getAssetsDir() {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'app.asar.unpacked', 'assets');
+  }
+  return path.join(__dirname, '..', 'assets');
+}
+
 const FORGE_INSTALLER_URL =
   `https://maven.minecraftforge.net/net/minecraftforge/forge/${FORGE_VERSION}/forge-${FORGE_VERSION}-installer.jar`;
 
@@ -220,7 +231,7 @@ async function downloadResourcePacks(gameDir, onProgress, force = false, apiKey 
     // Local pack bundled in assets/
     if (pack.source === 'local') {
       const destPath = path.join(dir, pack.keyword);
-      const srcPath  = path.join(__dirname, '..', 'assets', pack.keyword);
+      const srcPath  = path.join(getAssetsDir(), pack.keyword);
       if (fs.existsSync(srcPath)) {
         if (!fs.existsSync(destPath) || force) {
           if (fs.existsSync(destPath)) fs.removeSync(destPath);
